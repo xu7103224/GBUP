@@ -12,6 +12,16 @@
 
 namespace PUBG
 {
+	typedef struct _PROCESS_BASIC_INFORMATION64 {
+		NTSTATUS ExitStatus;
+		UINT32 Reserved0;
+		UINT64 PebBaseAddress;
+		UINT64 AffinityMask;
+		UINT32 BasePriority;
+		UINT32 Reserved1;
+		UINT64 UniqueProcessId;
+		UINT64 InheritedFromUniqueProcessId;
+	} PROCESS_BASIC_INFORMATION64;
 
 	static void LoadFuncs();
 
