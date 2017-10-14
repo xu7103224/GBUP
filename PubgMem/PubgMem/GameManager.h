@@ -24,6 +24,7 @@ namespace PUBG
 		UWorld          *pUWorld();
 		ULocalPlayer    *pLocalPlayer();
 		DWORD           GetPlayerCount();
+		const char*     GetActorName(PVOID pActor);
 	private:
 		Process           proc;
 		HWND              GameWindow;  //.´°¿Ú¾ä±ú

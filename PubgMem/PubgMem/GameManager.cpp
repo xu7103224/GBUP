@@ -90,8 +90,10 @@ namespace PUBG
 		int EntitiesCount(0);  //实体数
 		int VehiclesCount(0);  //车辆数
 		for (int i(0); i < ulevel.AActors.Count; i++) {
+			DWORD_PTR Addres;
 			AActor Actor;
-			proc.memory().Read<AActor>(reinterpret_cast<DWORD_PTR>(ulevel.AActors.Data) + i * 8, Actor);
+			proc.memory().Read<DWORD_PTR>(reinterpret_cast<DWORD_PTR>(ulevel.AActors.Data) + i * 8, Addres);
+			proc.memory().Read<AActor>(Addres, Actor);
 			if (Actor.BasePointer == 0)
 				continue;
 			EntitiesCount++;
@@ -101,6 +103,17 @@ namespace PUBG
 		//std::cout << "Entities counts =" << EntitiesCount << std::endl;
 		std::cout << "Players counts =" << PlayerCounts << std::endl;
 		return ulevel.AActors.Count;
+	}
+
+	const char * pubgCon::GetActorName(PVOID pActor)
+	{
+		//48 8B 3D ? ? ? ? 48 85 FF 75 38
+		DWORD_PTR GNameAdd = BaseAddress + 0x36DA610;
+		DWORD ID{ 0 };
+		proc.memory().Read<DWORD>(GNameAdd, ID);
+		UINT64 fNamePtr = (GNameAdd + (ID / 0x4000) * 8);
+
+		return nullptr;
 	}
 
 
