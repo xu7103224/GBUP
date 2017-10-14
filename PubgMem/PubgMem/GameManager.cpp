@@ -97,13 +97,33 @@ namespace PUBG
 			if (Actor.BasePointer == 0)
 				continue;
 			EntitiesCount++;
-			if (Actor.IsPlayer())
+
+			//
+			//»ñÈ¡objÃû×Ö
+			//
+			std::string &name = GetActorNameById(Actor.Id2);
+			std::cout << "obj name = " << name << std::endl;
+			if (Actor.IsPlayer(name))
 				PlayerCounts++;
 		}
-		//std::cout << "Entities counts =" << EntitiesCount << std::endl;
 		std::cout << "Players counts =" << PlayerCounts << std::endl;
 		return ulevel.AActors.Count;
 	}
+
+
+	std::string pubgCon::GetActorNameById(int ID)
+	{
+		DWORD_PTR fName;
+		char name[64] = { NULL };
+
+		proc.memory().Read<DWORD_PTR>(BaseAddress + 0x36DA610, fName);
+		proc.memory().Read<DWORD_PTR>(fName + int(ID / 0x4000) * 8, fName);
+		proc.memory().Read<DWORD_PTR>(fName + 8 * int(ID % 0x4000), fName);
+		if (ReadProcessMemory(proc.core().handle(), (LPVOID)(fName + 16), name, sizeof(name) - 2, NULL) != 0)
+			return std::string(name);
+		return std::string("NULL");
+	}
+
 
 	const char * pubgCon::GetActorName(PVOID pActor)
 	{

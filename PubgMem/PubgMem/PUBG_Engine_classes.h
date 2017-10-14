@@ -257,12 +257,11 @@ public:
 	unsigned char                                      UnknownData10[0x8];                                       // 0x0398(0x0008) MISSED OFFSET
 
 public:
-	inline bool IsPlayer() {
-		if (Id >= 60700 && Id <= 60800)
-			return TRUE;
-		if (Id2 >= 60700 && Id2 <= 60800)
-			return TRUE;
-		return FALSE;
+	inline bool IsPlayer(std::string &name) {
+		if (name == "PlayerFemale_A" || name == "PlayerFemale_A_C" || name == "PlayerMale_A" || name == "PlayerMale_A_C")
+			return true;
+
+		return false;
 	}
 
 	inline bool IsVehicle()

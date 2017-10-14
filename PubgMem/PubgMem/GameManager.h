@@ -24,6 +24,7 @@ namespace PUBG
 		UWorld          *pUWorld();
 		ULocalPlayer    *pLocalPlayer();
 		DWORD           GetPlayerCount();
+		std::string		GetActorNameById(int ID);
 		const char*     GetActorName(PVOID pActor);
 	private:
 		Process           proc;
