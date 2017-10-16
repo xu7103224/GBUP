@@ -22,8 +22,10 @@ namespace PUBG
 
 	public:
 		UWorld          *pUWorld();
+		ULevel          *pPlayList();
 		ULocalPlayer    *pLocalPlayer();
 		DWORD           GetPlayerCount();
+		Vector3D		GetActorPos(DWORD_PTR pactor);
 		std::string		GetActorNameById(int ID);
 		const char*     GetActorName(PVOID pActor);
 	private:

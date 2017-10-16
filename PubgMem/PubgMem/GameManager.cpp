@@ -2,6 +2,7 @@
 #include <iostream>
 #include <tchar.h>
 #include "PUBG_Engine_classes.h"
+#include "PUBG_Engine_structs.h"
 #define GAMEWINDOW "UnrealWindow"
 namespace PUBG
 {
@@ -63,6 +64,12 @@ namespace PUBG
 		return &uWorld;
 	}
 
+	ULevel * pubgCon::pPlayList()
+	{
+		pUWorld();
+		return nullptr;
+	}
+
 	ULocalPlayer * pubgCon::pLocalPlayer()
 	{
 		UGameInstance temp;
@@ -85,7 +92,7 @@ namespace PUBG
 		proc.memory().Read<UGameViewportClient>(reinterpret_cast<DWORD_PTR>(pLocalPlayer()->ViewportClient), ViewportClient);
 		proc.memory().Read<UWorld>(reinterpret_cast<DWORD_PTR>(ViewportClient.World), world);
 		proc.memory().Read<ULevel>(reinterpret_cast<DWORD_PTR>(world.PersistentLevel), ulevel);
-		
+
 		int PlayerCounts(0);   //玩家数
 		int EntitiesCount(0);  //实体数
 		int VehiclesCount(0);  //车辆数
@@ -94,22 +101,36 @@ namespace PUBG
 			AActor Actor;
 			proc.memory().Read<DWORD_PTR>(reinterpret_cast<DWORD_PTR>(ulevel.AActors.Data) + i * 8, Addres);
 			proc.memory().Read<AActor>(Addres, Actor);
-			if (Actor.BasePointer == 0)
+			auto pos = GetActorPos(Addres);
+			if (Actor.Vtable == 0)
 				continue;
 			EntitiesCount++;
 
 			//
 			//获取obj名字
 			//
-			std::string &name = GetActorNameById(Actor.Id2);
-			std::cout << "obj name = " << name << std::endl;
+			std::string &name = GetActorNameById(Actor.Name.ComparisonIndex);
+			std::cout << "obj name = " << name \
+				<< ", x = " << std::to_string(pos.x)\
+				<< ", y = " << std::to_string(pos.y)\
+				<< ", z = " << std::to_string(pos.z)\
+				<< std::endl;
+
 			if (Actor.IsPlayer(name))
-				PlayerCounts++;
+				++PlayerCounts;
 		}
 		std::cout << "Players counts =" << PlayerCounts << std::endl;
 		return ulevel.AActors.Count;
 	}
 
+	Vector3D pubgCon::GetActorPos(DWORD_PTR pactor)
+	{
+		Vector3D pos;
+		DWORD_PTR RootComponent;
+		proc.memory().Read<DWORD_PTR>(pactor + FIELD_OFFSET(AActor, RootComponent)/*0x180*/, RootComponent);
+		proc.memory().Read<Vector3D>((DWORD_PTR)RootComponent + FIELD_OFFSET(USceneComponent,UnknownData04)/*0x174*/, pos);
+		return pos;
+	}
 
 	std::string pubgCon::GetActorNameById(int ID)
 	{

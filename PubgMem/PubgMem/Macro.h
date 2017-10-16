@@ -135,3 +135,5 @@
 		}
 
 #define SharedUserData32 ((KUSER_SHARED_DATA* const)0x7FFE0000)
+
+#define INLINE inline

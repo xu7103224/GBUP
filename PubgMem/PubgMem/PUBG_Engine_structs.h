@@ -42,6 +42,13 @@ public:
 		return Vector3D(x - v.x, y - v.y, z - v.z);
 	}
 };
+
+class Rotator {
+public:
+	unsigned char unknownchar[0xC];
+
+};
+
 // Enum Engine.ENetRole
 enum class ENetRole
 {
@@ -102,7 +109,7 @@ enum class EInputConsumeOptions
 // 0x0008 (0x0058 - 0x0050)
 struct FActorTickFunction
 {
-	unsigned char                                      UnknownData00[0x8];                                       // 0x0050(0x0008) MISSED OFFSET
+	unsigned char                                      UnknownData00[0x58];                                       // 0x0050(0x0008) MISSED OFFSET
 };
 
 struct FScriptMulticastDelegate
