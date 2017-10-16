@@ -378,15 +378,6 @@ public:
 	unsigned char                                      UnknownData08[0x8];                                       // 0x00F0(0x0008) MISSED OFFSET
 };
 
-// Enum Engine.EDetailMode
-enum class EDetailMode : uint8_t
-{
-	DM_Low = 0,
-	DM_Medium = 1,
-	DM_High = 2,
-	DM_MAX = 3
-};
-
 class USceneComponent : public UActorComponent
 {
 public:
