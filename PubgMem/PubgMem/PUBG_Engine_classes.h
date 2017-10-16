@@ -4,7 +4,7 @@
 class UGameInstance;
 class UConsole;
 class ULevel;
-
+class USceneComponent;
 
 
 template<class T>
@@ -163,7 +163,6 @@ public:
 
 // Class Engine.Actor
 // 0x0378 (0x03A0 - 0x0028)
-
 class AActor : public UObject
 {
 public:
@@ -377,15 +376,6 @@ public:
 	struct FScriptMulticastDelegate                    OnComponentActivated;                                     // 0x00D0(0x0010) (CPF_ZeroConstructor, CPF_InstancedReference, CPF_BlueprintAssignable)
 	struct FScriptMulticastDelegate                    OnComponentDeactivated;                                   // 0x00E0(0x0010) (CPF_ZeroConstructor, CPF_InstancedReference, CPF_BlueprintAssignable)
 	unsigned char                                      UnknownData08[0x8];                                       // 0x00F0(0x0008) MISSED OFFSET
-};
-
-// Enum Engine.EComponentMobility
-enum class EComponentMobility : uint8_t
-{
-	EComponentMobility__Static = 0,
-	EComponentMobility__Stationary = 1,
-	EComponentMobility__Movable = 2,
-	EComponentMobility__EComponentMobility_MAX = 3
 };
 
 // Enum Engine.EDetailMode

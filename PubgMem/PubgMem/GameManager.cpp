@@ -64,11 +64,6 @@ namespace PUBG
 		return &uWorld;
 	}
 
-	ULevel * pubgCon::pPlayList()
-	{
-		pUWorld();
-		return nullptr;
-	}
 
 	ULocalPlayer * pubgCon::pLocalPlayer()
 	{
@@ -85,26 +80,14 @@ namespace PUBG
 
 	DWORD pubgCon::GetPlayerCount()
 	{
-		std::lock_guard<std::mutex> l(mymutex);
-		UGameViewportClient ViewportClient;
-		UWorld world;
-		ULevel ulevel;
-		proc.memory().Read<UGameViewportClient>(reinterpret_cast<DWORD_PTR>(pLocalPlayer()->ViewportClient), ViewportClient);
-		proc.memory().Read<UWorld>(reinterpret_cast<DWORD_PTR>(ViewportClient.World), world);
-		proc.memory().Read<ULevel>(reinterpret_cast<DWORD_PTR>(world.PersistentLevel), ulevel);
-
+		ULevel ulevel = GetPersistentLevel();
 		int PlayerCounts(0);   //玩家数
-		int EntitiesCount(0);  //实体数
-		int VehiclesCount(0);  //车辆数
 		for (int i(0); i < ulevel.AActors.Count; i++) {
 			DWORD_PTR Addres;
 			AActor Actor;
 			proc.memory().Read<DWORD_PTR>(reinterpret_cast<DWORD_PTR>(ulevel.AActors.Data) + i * 8, Addres);
 			proc.memory().Read<AActor>(Addres, Actor);
 			auto pos = GetActorPos(Addres);
-			if (Actor.Vtable == 0)
-				continue;
-			EntitiesCount++;
 
 			//
 			//获取obj名字
@@ -123,6 +106,12 @@ namespace PUBG
 		return ulevel.AActors.Count;
 	}
 
+	DWORD pubgCon::GetEntitiesCount()
+	{
+		ULevel ulevel = GetPersistentLevel();
+		return ulevel.AActors.Count;
+	}
+
 	Vector3D pubgCon::GetActorPos(DWORD_PTR pactor)
 	{
 		Vector3D pos;
@@ -130,6 +119,17 @@ namespace PUBG
 		proc.memory().Read<DWORD_PTR>(pactor + FIELD_OFFSET(AActor, RootComponent)/*0x180*/, RootComponent);
 		proc.memory().Read<Vector3D>((DWORD_PTR)RootComponent + FIELD_OFFSET(USceneComponent,UnknownData04)/*0x174*/, pos);
 		return pos;
+	}
+
+	ULevel pubgCon::GetPersistentLevel()
+	{
+		UGameViewportClient ViewportClient;
+		UWorld world;
+		ULevel ulevel;
+		proc.memory().Read<UGameViewportClient>(reinterpret_cast<DWORD_PTR>(pLocalPlayer()->ViewportClient), ViewportClient);
+		proc.memory().Read<UWorld>(reinterpret_cast<DWORD_PTR>(ViewportClient.World), world);
+		proc.memory().Read<ULevel>(reinterpret_cast<DWORD_PTR>(world.PersistentLevel), ulevel);
+		return ulevel;
 	}
 
 	std::string pubgCon::GetActorNameById(int ID)
@@ -145,17 +145,48 @@ namespace PUBG
 		return std::string("NULL");
 	}
 
-
-	const char * pubgCon::GetActorName(PVOID pActor)
+	BOOL pubgCon::IsPlayerActor(AActor * ptr)
 	{
-		//48 8B 3D ? ? ? ? 48 85 FF 75 38
-		DWORD_PTR GNameAdd = BaseAddress + 0x36DA610;
-		DWORD ID{ 0 };
-		proc.memory().Read<DWORD>(GNameAdd, ID);
-		UINT64 fNamePtr = (GNameAdd + (ID / 0x4000) * 8);
-
-		return nullptr;
+		AActor temp;
+		proc.memory().Read<AActor>(reinterpret_cast<DWORD_PTR>(ptr), temp);
+		std::string &name = GetActorNameById(temp.Name.ComparisonIndex);
+		return temp.IsPlayer(name);
 	}
+
+	AActor pubgCon::GetActorbyIndex(DWORD i, ULevel& ulevel)
+	{
+		AActor Actor;
+		DWORD_PTR Addres;
+		proc.memory().Read<DWORD_PTR>(reinterpret_cast<DWORD_PTR>(ulevel.AActors.Data) + i * 8, Addres);
+		proc.memory().Read<AActor>(Addres, Actor);
+		return Actor;
+	}
+
+	DWORD_PTR pubgCon::GetActorPtrbyIndex(DWORD i, ULevel& ulevel)
+	{
+		DWORD_PTR Addres{ 0 };
+		proc.memory().Read<DWORD_PTR>(reinterpret_cast<DWORD_PTR>(ulevel.AActors.Data) + i * 8, Addres);
+		return Addres;
+	}
+
+	std::unordered_set<AActor*> pubgCon::GetPlayerList()
+	{
+		std::unordered_set<AActor*> res;
+		ULevel ulevel = GetPersistentLevel();
+		for (int i(0); i < ulevel.AActors.Count; i++) {
+			DWORD_PTR ActorPtr(GetActorPtrbyIndex(i, ulevel));
+			if (IsPlayerActor(reinterpret_cast<AActor*>(ActorPtr)))
+				res.insert(reinterpret_cast<AActor*>(ActorPtr));
+		}
+		return res;
+	}
+
+	std::unordered_set<AActor*> pubgCon::GetEntitiesList()
+	{
+
+		return std::unordered_set<AActor*>();
+	}
+
 
 
 	VOID pubgCon::InitObj()

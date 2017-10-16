@@ -6,6 +6,7 @@
 #include <future>
 #include <atomic>
 #include <mutex>
+#include <unordered_set>
 #include <list>
 namespace PUBG
 {
@@ -22,12 +23,14 @@ namespace PUBG
 
 	public:
 		UWorld          *pUWorld();
-		ULevel          *pPlayList();
-		ULocalPlayer    *pLocalPlayer();
+		//ULevel          *pPlayList(); =  GetPersistentLevel()
+		ULocalPlayer    *pLocalPlayer(); 
 		DWORD           GetPlayerCount();
+		DWORD           GetEntitiesCount();
 		Vector3D		GetActorPos(DWORD_PTR pactor);
 		std::string		GetActorNameById(int ID);
-		const char*     GetActorName(PVOID pActor);
+
+
 	private:
 		Process           proc;
 		HWND              GameWindow;  //.´°¿Ú¾ä±ú
@@ -40,6 +43,14 @@ namespace PUBG
 		DWORD_PTR     BaseAddress;
 		UWorld        uWorld;
 		ULocalPlayer  LocalPlayer;
+
+		BOOL       IsPlayerActor(AActor* ptr);
+		ULevel     GetPersistentLevel();
+		AActor     GetActorbyIndex(DWORD i, ULevel& ulevel);
+		DWORD_PTR  GetActorPtrbyIndex(DWORD i, ULevel& ulevel);
+
+		std::unordered_set<AActor*> GetPlayerList();
+		std::unordered_set<AActor*> GetEntitiesList();  // Î´Íê³É
 	private:
 		pubgCon();
 		static pubgCon* m_instance;

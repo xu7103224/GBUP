@@ -104,6 +104,24 @@ enum class EInputConsumeOptions
 	ICO_MAX = 3
 };
 
+// Enum Engine.EDetailMode
+enum class EDetailMode : uint8_t
+{
+	DM_Low = 0,
+	DM_Medium = 1,
+	DM_High = 2,
+	DM_MAX = 3
+};
+
+// Enum Engine.EComponentMobility
+enum class EComponentMobility : uint8_t
+{
+	EComponentMobility__Static = 0,
+	EComponentMobility__Stationary = 1,
+	EComponentMobility__Movable = 2,
+	EComponentMobility__EComponentMobility_MAX = 3
+};
+
 
 // ScriptStruct Engine.ActorTickFunction
 // 0x0008 (0x0058 - 0x0050)
