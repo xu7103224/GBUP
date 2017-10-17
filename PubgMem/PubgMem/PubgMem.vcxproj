@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameManager.cpp" />
+    <ClCompile Include="math.h" />
     <ClCompile Include="NativeSubsystem.cpp" />
     <ClCompile Include="Offsets.cpp" />
     <ClCompile Include="Process.cpp" />

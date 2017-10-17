@@ -9,6 +9,11 @@
 #include <unordered_set>
 #include <vector>
 #include <list>
+#include <windows.h>
+
+
+typedef BOOL ( __stdcall *_EnumActorCallback)(AActor &actor, void *parameter);
+
 namespace PUBG
 {
 	enum ActorType {
@@ -24,7 +29,6 @@ namespace PUBG
 		BOAT,      //船
 		NONVehic   //非载具
 	};
-
 	struct ActorList {
 		std::vector<DWORD_PTR> Players;
 		std::vector<std::vector<DWORD_PTR>> Vehicles;
@@ -43,14 +47,21 @@ namespace PUBG
 		VOID    RefreshOffsets();
 
 	public:
-		UWorld          *pUWorld();
-		//ULevel          *pPlayList(); =  GetPersistentLevel()
-		ULocalPlayer    *pLocalPlayer(); 
-		ActorList       *pAllActorsList();
-		DWORD           GetPlayerCount();
-		DWORD           GetEntitiesCount();
-		Vector3D		GetActorPos(DWORD_PTR pactor);
-		std::string		GetActorNameById(int ID);
+		UWorld				*pUWorld();
+		//ULevel			  *pPlayList(); =  GetPersistentLevel()
+		ULocalPlayer    	*pLocalPlayer(); 
+		ActorList       	*pAllActorsList();
+		DWORD				GetPlayerCount();
+		DWORD				GetEntitiesCount();
+		Vector3D			GetActorPos(DWORD_PTR pactor);
+		std::string			GetActorNameById(int ID);
+		BOOL				EnumActor(_EnumActorCallback cb, void *parameter);					//当cb返回true时终止遍历，否则遍历所有actor之后返回false
+		void				EnumPlayComponent();
+		FTransform			GetBoneIndex(DWORD_PTR mesh, int index);
+		Vector3D			GetBoneWithRotation(DWORD_PTR mesh, int id);
+		FCameraCacheEntry	GetCameraCache();
+		void				DrawSkeleton(DWORD_PTR mesh);//临时函数
+
 
 
 	private:
@@ -68,16 +79,17 @@ namespace PUBG
 		ActorList     AllActors;
 
 		VOID         CacheNames();
-		BOOL         IsPlayerActor(AActor* ptr);
-		ULevel       GetPersistentLevel();
+		BOOL       IsPlayerActor(AActor* ptr);
+		ULevel     GetPersistentLevel();
 		VehicleType  IsVehicleActor(AActor* ptr);
-		AActor       GetActorbyIndex(DWORD i, ULevel& ulevel);
-		DWORD_PTR    GetActorPtrbyIndex(DWORD i, ULevel& ulevel);
+		AActor     GetActorbyIndex(DWORD i, ULevel& ulevel);
+		DWORD_PTR  GetActorPtrbyIndex(DWORD i, ULevel& ulevel);
+
 
 		std::unordered_set<AActor*> GetPlayerList();
-		
 	private:
 		pubgCon();
 		static pubgCon* m_instance;
+
 	};
 }

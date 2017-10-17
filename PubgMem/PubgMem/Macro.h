@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
-
+#include <windows.h>
+#include <winnt.h>
 // Architecture-dependent pointer size
 #define WordSize sizeof(void*)
 
@@ -8,7 +9,7 @@
 #define MAKE_PTR(T, pRVA, base)           (T)((ptr_t)pRVA + (ptr_t)base)
 #define REBASE(pRVA, baseOld, baseNew)       ((ptr_t)pRVA - (ptr_t)baseOld + (ptr_t)baseNew)
 
-// Field offset info
+
 #define FIELD_OFFSET2(type, field)  ((LONG)(LONG_PTR)&(((type)0)->field))
 #define GET_FIELD_PTR(entry, field) (uintptr_t)((uint8_t*)entry + FIELD_OFFSET2(decltype(entry), field))
 
@@ -137,3 +138,5 @@
 #define SharedUserData32 ((KUSER_SHARED_DATA* const)0x7FFE0000)
 
 #define INLINE inline
+
+#define SAFE_DELETE(p) if(p) delete(p)

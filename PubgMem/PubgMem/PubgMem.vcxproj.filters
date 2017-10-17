@@ -136,5 +136,8 @@
     <ClCompile Include="GameManager.cpp">
       <Filter>GameCheat</Filter>
     </ClCompile>
+    <ClCompile Include="math.h">
+      <Filter>Misc</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
