@@ -7,9 +7,30 @@
 #include <atomic>
 #include <mutex>
 #include <unordered_set>
+#include <vector>
 #include <list>
 namespace PUBG
 {
+	enum ActorType {
+		Player,
+		Vehicle,
+		Item
+	};
+	enum VehicleType {
+		UAZ,       //吉普
+		DACIA,     //轿车
+		MOTORBIKE, //摩托
+		BUGGY,     //越野赛车
+		BOAT,      //船
+		NONVehic   //非载具
+	};
+
+	struct ActorList {
+		std::vector<DWORD_PTR> Players;
+		std::vector<std::vector<DWORD_PTR>> Vehicles;
+		std::vector<DWORD_PTR> Items;
+	};
+
 	extern HANDLE TragetHandle;
 	class pubgCon
 	{
@@ -25,6 +46,7 @@ namespace PUBG
 		UWorld          *pUWorld();
 		//ULevel          *pPlayList(); =  GetPersistentLevel()
 		ULocalPlayer    *pLocalPlayer(); 
+		ActorList       *pAllActorsList();
 		DWORD           GetPlayerCount();
 		DWORD           GetEntitiesCount();
 		Vector3D		GetActorPos(DWORD_PTR pactor);
@@ -43,14 +65,17 @@ namespace PUBG
 		DWORD_PTR     BaseAddress;
 		UWorld        uWorld;
 		ULocalPlayer  LocalPlayer;
+		ActorList     AllActors;
 
-		BOOL       IsPlayerActor(AActor* ptr);
-		ULevel     GetPersistentLevel();
-		AActor     GetActorbyIndex(DWORD i, ULevel& ulevel);
-		DWORD_PTR  GetActorPtrbyIndex(DWORD i, ULevel& ulevel);
+		VOID         CacheNames();
+		BOOL         IsPlayerActor(AActor* ptr);
+		ULevel       GetPersistentLevel();
+		VehicleType  IsVehicleActor(AActor* ptr);
+		AActor       GetActorbyIndex(DWORD i, ULevel& ulevel);
+		DWORD_PTR    GetActorPtrbyIndex(DWORD i, ULevel& ulevel);
 
 		std::unordered_set<AActor*> GetPlayerList();
-		std::unordered_set<AActor*> GetEntitiesList();  // 未完成
+		
 	private:
 		pubgCon();
 		static pubgCon* m_instance;

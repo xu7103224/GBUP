@@ -20,6 +20,13 @@ namespace PUBG
 		if (GameWindow == 0) std::cout << "´°¿ÚÃ»ÕÒµ½£¡\n";
 #endif
 		ZeroMemory(&uWorld, sizeof(UWorld));
+		{
+			AllActors.Vehicles.push_back(std::vector<DWORD_PTR>()); // UAZ
+			AllActors.Vehicles.push_back(std::vector<DWORD_PTR>()); // DACIA
+			AllActors.Vehicles.push_back(std::vector<DWORD_PTR>()); // MOTORBIKE
+			AllActors.Vehicles.push_back(std::vector<DWORD_PTR>()); // BUGGY
+			AllActors.Vehicles.push_back(std::vector<DWORD_PTR>()); // BOAT
+		}
 	}
 
 	pubgCon::~pubgCon()
@@ -47,7 +54,7 @@ namespace PUBG
 #endif
 		BaseAddress = proc.module().GetModule(TARGETPROC)->baseAddress;
 		offsets.tlsGameBase = proc.module().GetModule(TARGETPROC)->baseAddress;
-		proc.memory().Read<DWORD_PTR>(offsets.tlsGameBase + 0x37D7818, offsets.pUWorld);
+		proc.memory().Read<DWORD_PTR>(offsets.tlsGameBase + PUWORLD_OFFSETS, offsets.pUWorld);
 		proc.memory().Read<DWORD_PTR>(offsets.pUWorld + 0x140, offsets.pGameInstance);
 		proc.memory().Read<DWORD_PTR>(offsets.pGameInstance + 0x38, offsets.pLocalPlayerArray);
 		std::cout << "tlsGameBase = " << std::hex << offsets.tlsGameBase << "\n pUWorld = " << std::hex << offsets.pUWorld \
@@ -59,7 +66,7 @@ namespace PUBG
 	UWorld * pubgCon::pUWorld()
 	{
 		DWORD_PTR pworldAdd{ 0 };
-		proc.memory().Read<DWORD_PTR>(BaseAddress + 0x37D7818, pworldAdd);
+		proc.memory().Read<DWORD_PTR>(BaseAddress + PUWORLD_OFFSETS, pworldAdd);
 		proc.memory().Read<UWorld>(pworldAdd, uWorld);
 		return &uWorld;
 	}
@@ -112,6 +119,56 @@ namespace PUBG
 		return ulevel.AActors.Count;
 	}
 
+	VOID pubgCon::CacheNames()
+	{
+		std::string name = "";
+		for (int i(0), c1(0), c2(0), c3(0), c4(0), c5(0), c6(0); i < 200000; i++)
+		{
+			if (c1 == 4 && c2 == 3 && c3 == 4 && c4 == 5 && c5 == 3 && boat != 0 && c6 == 2)
+			{
+				std::cout << "IDs retrieved" << std::endl;
+				return;
+			}
+			name = GetActorNameById(i);
+			if (name == playerNames.at(0).c_str() || name == playerNames.at(1).c_str() || name == playerNames.at(2).c_str() || name == playerNames.at(3).c_str())
+			{
+				std::cout << name << " " << i << std::endl;
+				ActorIds[c1++] = i;
+			}
+			if (name == uazNames.at(0).c_str() || name == uazNames.at(1).c_str() || name == uazNames.at(2).c_str())
+			{
+				uaz[c2++] = i;
+				std::cout << name << " " << i << std::endl;
+			}
+			if (name == daciaNames.at(0).c_str() || name == daciaNames.at(1).c_str() || name == daciaNames.at(2).c_str() || name == daciaNames.at(3).c_str())
+			{
+				dacia[c3++] = i;
+				std::cout << name << " " << i << std::endl;
+			}
+			if (name == bikeNames.at(0).c_str() || name == bikeNames.at(1).c_str() || name == bikeNames.at(2).c_str() || name == bikeNames.at(3).c_str() || name == bikeNames.at(4).c_str())
+			{
+				std::cout << name << " " << i << std::endl;
+				motorbike[c4++] = i;
+			}
+			if (name == buggyNames.at(0).c_str() || name == buggyNames.at(1).c_str() || name == buggyNames.at(2).c_str())
+			{
+				std::cout << name << " " << i << std::endl;
+				buggy[c5++] = i;
+			}
+			if (name == boatName.at(0).c_str())
+			{
+				std::cout << name << " " << i << std::endl;
+				boat = i;
+			}
+			if (name == ItemName_[0] || name == ItemName_[1])
+			{
+				std::cout << name << " " << i << std::endl;
+				itemtype[c6++] = i;
+			}
+		}
+		return VOID();
+	}
+
 	Vector3D pubgCon::GetActorPos(DWORD_PTR pactor)
 	{
 		Vector3D pos;
@@ -149,9 +206,39 @@ namespace PUBG
 	{
 		AActor temp;
 		proc.memory().Read<AActor>(reinterpret_cast<DWORD_PTR>(ptr), temp);
-		std::string &name = GetActorNameById(temp.Name.ComparisonIndex);
-		return temp.IsPlayer(name);
+		for (int i(0); i < 4; i++) {
+			if (ActorIds[i] == temp.Name.ComparisonIndex)
+				return TRUE;
+		}
+		return FALSE;
 	}
+
+	VehicleType pubgCon::IsVehicleActor(AActor * ptr)
+	{
+		AActor temp;
+		proc.memory().Read<AActor>(reinterpret_cast<DWORD_PTR>(ptr), temp);
+		for (int i(0); i < 3; i++) {//UAZ
+			if (uaz[i] == temp.Name.ComparisonIndex)
+				return UAZ;
+		}
+		for (int i(0); i < 4; i++) { //DACIA
+			if (dacia[i] == temp.Name.ComparisonIndex)
+				return DACIA;
+		}
+		for (int i(0); i < 5; i++) { //MOTORBIKE
+			if (motorbike[i] == temp.Name.ComparisonIndex)
+				return MOTORBIKE;
+		}
+		for (int i(0); i < 3; i++) { //BUGGY
+			if (motorbike[i] == temp.Name.ComparisonIndex)
+				return BUGGY;
+		}
+		if (boat == temp.Name.ComparisonIndex)
+			return BOAT;
+		else
+			return NONVehic;
+	}
+
 
 	AActor pubgCon::GetActorbyIndex(DWORD i, ULevel& ulevel)
 	{
@@ -181,13 +268,38 @@ namespace PUBG
 		return res;
 	}
 
-	std::unordered_set<AActor*> pubgCon::GetEntitiesList()
+	ActorList * pubgCon::pAllActorsList()
 	{
+		std::lock_guard<std::mutex> l(mymutex);
+		AllActors.Players.clear();
+		AllActors.Items.clear();
+		if (AllActors.Vehicles.size() == 5)
+			for (int i(0); i < 5; i++)
+				AllActors.Vehicles.at(i).clear();
+		else {
+			std::cout << "Vehicles counts is invaild!" << std::endl;
+			return nullptr;
+		}
+		VehicleType vehicletype_{ NONVehic };
+		std::unordered_set<AActor*> res;
+		ULevel ulevel = GetPersistentLevel();
+		for (int i(0); i < ulevel.AActors.Count; i++) {
+			DWORD_PTR ActorPtr(GetActorPtrbyIndex(i, ulevel));
+			if (IsPlayerActor(reinterpret_cast<AActor*>(ActorPtr))) {
+				AllActors.Players.push_back(ActorPtr);
+				continue;
+			}
 
-		return std::unordered_set<AActor*>();
+			if ((vehicletype_ = IsVehicleActor(reinterpret_cast<AActor*>(ActorPtr))) != NONVehic) {
+				AllActors.Vehicles.at(vehicletype_).push_back(ActorPtr);
+				continue;
+			}
+			else
+				AllActors.Items.push_back(ActorPtr);
+
+		}
+		return &AllActors;
 	}
-
-
 
 	VOID pubgCon::InitObj()
 	{
@@ -198,6 +310,7 @@ namespace PUBG
 			try
 			{
 				RefreshOffsets();
+				CacheNames();
 				my_atomic.store(TRUE);
 			}
 			catch (...){
