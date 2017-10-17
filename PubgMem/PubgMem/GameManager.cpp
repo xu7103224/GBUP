@@ -212,7 +212,7 @@ namespace PUBG
 			AActor Actor;
 			proc.memory().Read<DWORD_PTR>(reinterpret_cast<DWORD_PTR>(ulevel.AActors.Data) + i * 8, Addres);
 			proc.memory().Read<AActor>(Addres, Actor);
-			if (cb(Actor, parameter)) {
+			if (cb(Actor, Addres, parameter)) {
 				return TRUE;
 			}
 		}
@@ -223,7 +223,7 @@ namespace PUBG
 	void pubgCon::EnumPlayComponent()
 	{
 		void *param( reinterpret_cast<void *>(this));
-		EnumActor([](AActor& actor, void *parameter)->BOOL {
+		EnumActor([](AActor& actor, DWORD_PTR addr, void *parameter)->BOOL {
 			pubgCon* _this = reinterpret_cast<pubgCon *>(parameter);
 			USceneComponent comp;
 
@@ -345,7 +345,6 @@ namespace PUBG
 			}
 			else
 				AllActors.Items.push_back(ActorPtr);
-
 		}
 		return &AllActors;
 	}
@@ -382,7 +381,7 @@ namespace PUBG
 	}
 
 
-	Vector3D WorldToScreen(Vector3D &WorldLocation, FCameraCacheEntry &CameraCacheL)
+	Vector3D pubgCon::WorldToScreen(Vector3D &WorldLocation, FCameraCacheEntry &CameraCacheL)
 	{
 		int s_width = 0;//s_width	//фад╩©М
 		int s_height = 0;//s_height	//фад╩╦ъ
@@ -415,18 +414,20 @@ namespace PUBG
 		return Screenlocation;
 	}
 
-	void pubgCon::DrawSkeleton(DWORD_PTR mesh)
+	std::vector<D3DXLine> &pubgCon::GetLine(DWORD_PTR mesh, std::vector<D3DXLine>& vl)
 	{
 		Vector3D neckpos = GetBoneWithRotation(mesh, Bones::neck_01);
 		Vector3D pelvispos = GetBoneWithRotation(mesh, Bones::pelvis);
 		Vector3D previous(0, 0, 0);
 		Vector3D current, p1, c1;
+		
 		for (auto a : skeleton)
 		{
 			previous = Vector3D(0, 0, 0);
 			for (int bone : a)
 			{
 				current = bone == Bones::neck_01 ? neckpos : (bone == Bones::pelvis ? pelvispos : GetBoneWithRotation(mesh, bone));
+		
 				if (previous.x == 0.f)
 				{
 					previous = current;
@@ -434,10 +435,34 @@ namespace PUBG
 				}
 				p1 = WorldToScreen(previous, *g_global.cameracache);
 				c1 = WorldToScreen(current, *g_global.cameracache);
-				//DrawLine(p1.x, p1.y, c1.x, c1.y, D3DCOLOR_ARGB(255, 153, 249, 9));
+				D3DXLine dLine;
+				dLine.t1.x = p1.x;
+				dLine.t1.y = p1.y;
+				dLine.t2.x = c1.x;
+				dLine.t2.y = c1.y;
+				vl.push_back(dLine);
 				previous = current;
 			}
 		}
+		return vl;
+	}
+
+	void pubgCon::printPlayLine()
+	{
+		void *param(reinterpret_cast<void *>(this));
+		EnumActor([](AActor& actor, DWORD_PTR addr, void *parameter)->BOOL {
+			pubgCon *_this = reinterpret_cast<pubgCon *>(parameter);
+			DWORD_PTR mesh;
+			_this->proc.memory().Read<DWORD_PTR>(addr + 0x400, mesh);
+			std::vector<D3DXLine> vl;
+			_this->GetLine(mesh, vl);
+			int count = 0;
+			for (auto line : vl) {
+				std::cout << count << "> t1.x=" << line.t1.x << ", t1.y=" << line.t1.y\
+					<< ", t2.x = " << line.t2.x << ", t2.y = " << line.t2.y << std::endl;
+			}
+			return FALSE;
+		}, param);
 	}
 	// xuq add end
 
@@ -450,6 +475,7 @@ namespace PUBG
 		{
 			try
 			{
+				//printPlayLine();
 				g_global.update();
 				RefreshOffsets();
 				my_atomic.store(TRUE);

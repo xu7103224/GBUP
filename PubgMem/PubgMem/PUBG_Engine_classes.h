@@ -250,6 +250,17 @@ struct D3DMATRIX {
 	};
 };
 
+struct D3DXVECTOR2 {
+	FLOAT x;
+	FLOAT y;
+};
+
+struct D3DXLine{
+	D3DXVECTOR2 t1;
+	D3DXVECTOR2 t2;
+};
+
+
 struct FTransform
 {
 	FQuat									Rotation;                                                 // 0x0000(0x0010) (CPF_Edit, CPF_BlueprintVisible, CPF_SaveGame, CPF_IsPlainOldData)

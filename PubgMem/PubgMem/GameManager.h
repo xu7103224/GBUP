@@ -12,7 +12,7 @@
 #include <windows.h>
 
 
-typedef BOOL ( __stdcall *_EnumActorCallback)(AActor &actor, void *parameter);
+typedef BOOL ( __stdcall *_EnumActorCallback)(AActor &actor, DWORD_PTR actoraddr, void *parameter);
 
 namespace PUBG
 {
@@ -55,12 +55,15 @@ namespace PUBG
 		DWORD				GetEntitiesCount();
 		Vector3D			GetActorPos(DWORD_PTR pactor);
 		std::string			GetActorNameById(int ID);
-		BOOL				EnumActor(_EnumActorCallback cb, void *parameter);					//当cb返回true时终止遍历，否则遍历所有actor之后返回false
-		void				EnumPlayComponent();
+		BOOL				EnumActor(_EnumActorCallback cb, void *parameter);	//当cb返回true时终止遍历，否则遍历所有actor之后返回false
+		void				EnumPlayComponent();//测试用
 		FTransform			GetBoneIndex(DWORD_PTR mesh, int index);
 		Vector3D			GetBoneWithRotation(DWORD_PTR mesh, int id);
 		FCameraCacheEntry	GetCameraCache();
-		void				DrawSkeleton(DWORD_PTR mesh);//临时函数
+		Vector3D			WorldToScreen(Vector3D & WorldLocation, FCameraCacheEntry & CameraCacheL);
+		std::vector<D3DXLine> &GetLine(DWORD_PTR mesh, std::vector<D3DXLine>& vl);//获取一组骨架线
+		void				printPlayLine();//测试用
+		
 
 
 
