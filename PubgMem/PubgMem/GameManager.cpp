@@ -471,8 +471,8 @@ namespace PUBG
 		std::cout << "success!" << std::endl;
 		do
 		{
-			MessageBox(NULL, "AAAA", NULL, NULL);
-			EnumPlayComponent();
+			//MessageBox(NULL, "AAAA", NULL, NULL);
+			//EnumPlayComponent();
 			GetPlayerCount();
 			Sleep(2000);
 		} while (true);
