@@ -386,8 +386,6 @@ namespace PUBG
 
 	Vector3D pubgCon::WorldToScreen(Vector3D &WorldLocation, FCameraCacheEntry &CameraCacheL)
 	{
-		int s_width = 1680;//s_width	//фад╩©М
-		int s_height = 1050;//s_height	//фад╩╦ъ
 		Vector3D Screenlocation = Vector3D(0, 0, 0);
 
 		auto POV = CameraCacheL.POV;
@@ -407,8 +405,8 @@ namespace PUBG
 			vTransformed.z = 1.f;
 
 		float FovAngle = POV.FOV;
-		float ScreenCenterX = s_width / 2.0f;
-		float ScreenCenterY = s_height / 2.0f;
+		float ScreenCenterX = g_global.screenWidth / 2.0f;
+		float ScreenCenterY = g_global.screenHeight / 2.0f;
 
 		Screenlocation.x = ScreenCenterX + vTransformed.x * (ScreenCenterX / tanf(FovAngle * (float)M_PI / 360.f)) / vTransformed.z;
 		Screenlocation.y = ScreenCenterY - vTransformed.y * (ScreenCenterX / tanf(FovAngle * (float)M_PI / 360.f)) / vTransformed.z;

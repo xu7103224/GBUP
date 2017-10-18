@@ -35,9 +35,11 @@ namespace PUBG
 
 	CGlobalObjs g_global;
 
-	CGlobalObjs::CGlobalObjs()
+	CGlobalObjs::CGlobalObjs():
+		cameracache(new FCameraCacheEntry()),
+		screenWidth(0),
+		screenHeight(0)
 	{
-		cameracache = new FCameraCacheEntry();
 
 	}
 
@@ -50,6 +52,12 @@ namespace PUBG
 	{
 		pubgCon *pc = pubgCon::instance();
 		*cameracache = pc->GetCameraCache();
+
+		RECT rc;
+		HWND hWnd = FindWindowW(L"UnrealWindow", 0);
+		GetWindowRect(hWnd, &rc);
+		screenWidth = rc.right - rc.left;
+		screenHeight = rc.bottom - rc.top;
 	}
 
 }

@@ -30,7 +30,10 @@ namespace PUBG
 		CGlobalObjs();
 		~CGlobalObjs();
 		void update();
+
 		FCameraCacheEntry *cameracache;
+		int screenWidth;
+		int screenHeight;
 	};
 
 	extern COffsets offsets;
