@@ -1,103 +1,18 @@
 #pragma once
 #include "PUBG_Basic.h"
 #include "PUBG_Engine_structs.h"
-#include "math.h"
+#include "vector2D.h"
+#include "vector3D.h"
+#include "Rotator.h"
+#include <d3d9.h>
+#include <D3dx9math.h>
 class UGameInstance;
 class UConsole;
 class ULevel;
 class USceneComponent;
 struct FMinimalViewInfo;
 
-class Vector2D
-{
-public:
-	Vector2D() : x(0.f), y(0.f)
-	{
 
-	}
-
-	Vector2D(float _x, float _y) : x(_x), y(_y)
-	{
-
-	}
-	~Vector2D()
-	{
-
-	}
-
-	/** Vector's X component. */
-	float x;
-
-	/** Vector's Y component. */
-	float y;
-};
-
-//Vector3
-class Vector3D
-{
-public:
-	Vector3D() : x(0.f), y(0.f), z(0.f)
-	{
-
-	}
-
-	Vector3D(float _x, float _y, float _z) : x(_x), y(_y), z(_z)
-	{
-
-	}
-	~Vector3D()
-	{
-
-	}
-
-	float x;
-	float y;
-	float z;
-
-	inline float Dot(Vector3D v)
-	{
-		return x * v.x + y * v.y + z * v.z;
-	}
-
-	inline float Distance(Vector3D v)
-	{
-		return float(sqrtf(powf(v.x - x, 2.0) + powf(v.y - y, 2.0) + powf(v.z - z, 2.0)));
-	}
-
-	Vector3D operator+(Vector3D v)
-	{
-		return Vector3D(x + v.x, y + v.y, z + v.z);
-	}
-
-	Vector3D operator-(Vector3D v)
-	{
-		return Vector3D(x - v.x, y - v.y, z - v.z);
-	}
-};
-
-class Rotator
-{
-public:
-	/** Rotation around the right axis (around Y axis), Looking up and down (0=Straight Ahead, +Up, -Down) */
-	float Pitch;
-
-	/** Rotation around the up axis (around Z axis), Running in circles 0=East, +North, -South. */
-	float Yaw;
-
-	/** Rotation around the forward axis (around X axis), Tilting your head, 0=Straight, +Clockwise, -CCW. */
-	float Roll;
-
-
-	Vector3D Vector() const
-	{
-		float CP, SP, CY, SY;
-		FMath::SinCos(&SP, &CP, FMath::DegreesToRadians(Pitch));
-		FMath::SinCos(&SY, &CY, FMath::DegreesToRadians(Yaw));
-		Vector3D V = Vector3D(CP*CY, CP*SY, SP);
-
-		return V;
-	}
-};
 
 
 template<class T>
@@ -175,84 +90,6 @@ struct FQuat
 	float y;
 	float z;
 	float w;
-};
-
-
-struct D3DMATRIX {
-	union {
-		struct {
-			float        _11, _12, _13, _14;
-			float        _21, _22, _23, _24;
-			float        _31, _32, _33, _34;
-			float        _41, _42, _43, _44;
-		};
-		float m[4][4];
-	};
-
-	static D3DMATRIX MatrixMultiplication(D3DMATRIX &pM1, D3DMATRIX &pM2)
-	{
-		D3DMATRIX pOut;
-		pOut._11 = pM1._11 * pM2._11 + pM1._12 * pM2._21 + pM1._13 * pM2._31 + pM1._14 * pM2._41;
-		pOut._12 = pM1._11 * pM2._12 + pM1._12 * pM2._22 + pM1._13 * pM2._32 + pM1._14 * pM2._42;
-		pOut._13 = pM1._11 * pM2._13 + pM1._12 * pM2._23 + pM1._13 * pM2._33 + pM1._14 * pM2._43;
-		pOut._14 = pM1._11 * pM2._14 + pM1._12 * pM2._24 + pM1._13 * pM2._34 + pM1._14 * pM2._44;
-		pOut._21 = pM1._21 * pM2._11 + pM1._22 * pM2._21 + pM1._23 * pM2._31 + pM1._24 * pM2._41;
-		pOut._22 = pM1._21 * pM2._12 + pM1._22 * pM2._22 + pM1._23 * pM2._32 + pM1._24 * pM2._42;
-		pOut._23 = pM1._21 * pM2._13 + pM1._22 * pM2._23 + pM1._23 * pM2._33 + pM1._24 * pM2._43;
-		pOut._24 = pM1._21 * pM2._14 + pM1._22 * pM2._24 + pM1._23 * pM2._34 + pM1._24 * pM2._44;
-		pOut._31 = pM1._31 * pM2._11 + pM1._32 * pM2._21 + pM1._33 * pM2._31 + pM1._34 * pM2._41;
-		pOut._32 = pM1._31 * pM2._12 + pM1._32 * pM2._22 + pM1._33 * pM2._32 + pM1._34 * pM2._42;
-		pOut._33 = pM1._31 * pM2._13 + pM1._32 * pM2._23 + pM1._33 * pM2._33 + pM1._34 * pM2._43;
-		pOut._34 = pM1._31 * pM2._14 + pM1._32 * pM2._24 + pM1._33 * pM2._34 + pM1._34 * pM2._44;
-		pOut._41 = pM1._41 * pM2._11 + pM1._42 * pM2._21 + pM1._43 * pM2._31 + pM1._44 * pM2._41;
-		pOut._42 = pM1._41 * pM2._12 + pM1._42 * pM2._22 + pM1._43 * pM2._32 + pM1._44 * pM2._42;
-		pOut._43 = pM1._41 * pM2._13 + pM1._42 * pM2._23 + pM1._43 * pM2._33 + pM1._44 * pM2._43;
-		pOut._44 = pM1._41 * pM2._14 + pM1._42 * pM2._24 + pM1._43 * pM2._34 + pM1._44 * pM2._44;
-
-		return pOut;
-	};
-
-	static D3DMATRIX Matrix(Vector3D &rot, Vector3D &origin = Vector3D(0, 0, 0))
-	{
-		float radPitch = (rot.x * float(M_PI) / 180.f);
-		float radYaw = (rot.y * float(M_PI) / 180.f);
-		float radRoll = (rot.z * float(M_PI) / 180.f);
-
-		float SP = sinf(radPitch);
-		float CP = cosf(radPitch);
-		float SY = sinf(radYaw);
-		float CY = cosf(radYaw);
-		float SR = sinf(radRoll);
-		float CR = cosf(radRoll);
-
-		D3DMATRIX matrix;
-		matrix.m[0][0] = CP * CY;
-		matrix.m[0][1] = CP * SY;
-		matrix.m[0][2] = SP;
-		matrix.m[0][3] = 0.f;
-
-		matrix.m[1][0] = SR * SP * CY - CR * SY;
-		matrix.m[1][1] = SR * SP * SY + CR * CY;
-		matrix.m[1][2] = -SR * CP;
-		matrix.m[1][3] = 0.f;
-
-		matrix.m[2][0] = -(CR * SP * CY + SR * SY);
-		matrix.m[2][1] = CY * SR - CR * SP * SY;
-		matrix.m[2][2] = CR * CP;
-		matrix.m[2][3] = 0.f;
-
-		matrix.m[3][0] = origin.x;
-		matrix.m[3][1] = origin.y;
-		matrix.m[3][2] = origin.z;
-		matrix.m[3][3] = 1.f;
-
-		return matrix;
-	};
-};
-
-struct D3DXVECTOR2 {
-	FLOAT x;
-	FLOAT y;
 };
 
 struct D3DXLine{

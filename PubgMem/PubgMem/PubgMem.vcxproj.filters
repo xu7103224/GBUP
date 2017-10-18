@@ -23,6 +23,12 @@
     <Filter Include="GameCheat\GameStruct">
       <UniqueIdentifier>{8ceb716a-89a4-472f-a08f-4e3c6599cbb8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="window">
+      <UniqueIdentifier>{b07f7d34-d1a2-4a78-beeb-ebf45209e971}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Misc\math">
+      <UniqueIdentifier>{6581adcc-d068-4a2e-adc9-80a6ed6e9191}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -103,6 +109,21 @@
     <ClInclude Include="PUBG_Basic.h">
       <Filter>GameCheat\GameStruct</Filter>
     </ClInclude>
+    <ClInclude Include="vector2D.h">
+      <Filter>Misc\math</Filter>
+    </ClInclude>
+    <ClInclude Include="vector3D.h">
+      <Filter>Misc\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Rotator.h">
+      <Filter>Misc\math</Filter>
+    </ClInclude>
+    <ClInclude Include="FMath.h">
+      <Filter>Misc\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Overlay.h">
+      <Filter>window</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NativeSubsystem.cpp">
@@ -136,8 +157,20 @@
     <ClCompile Include="GameManager.cpp">
       <Filter>GameCheat</Filter>
     </ClCompile>
-    <ClCompile Include="math.h">
-      <Filter>Misc</Filter>
+    <ClCompile Include="vector2D.cpp">
+      <Filter>Misc\math</Filter>
+    </ClCompile>
+    <ClCompile Include="vector3D.cpp">
+      <Filter>Misc\math</Filter>
+    </ClCompile>
+    <ClCompile Include="Rotator.cpp">
+      <Filter>Misc\math</Filter>
+    </ClCompile>
+    <ClCompile Include="FMath.cpp">
+      <Filter>Misc\math</Filter>
+    </ClCompile>
+    <ClCompile Include="Overlay.cpp">
+      <Filter>window</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

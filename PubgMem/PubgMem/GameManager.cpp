@@ -1,6 +1,8 @@
 #include "GameManager.h"
 #include <iostream>
 #include <tchar.h>
+#include "Overlay.h"
+#include "FMath.h"
 #include "PUBG_Engine_classes.h"
 #include "PUBG_Engine_structs.h"
 #define GAMEWINDOW "UnrealWindow"
@@ -379,7 +381,7 @@ namespace PUBG
 		FTransform ComponentToWorld;
 		proc.memory().Read<FTransform>(mesh + 0x190, ComponentToWorld);
 		D3DMATRIX Matrix;
-		Matrix = D3DMATRIX::MatrixMultiplication(bone.ToMatrixWithScale(), ComponentToWorld.ToMatrixWithScale());
+		Matrix = FMath::MatrixMultiplication(bone.ToMatrixWithScale(), ComponentToWorld.ToMatrixWithScale());
 		return Vector3D(Matrix._41, Matrix._42, Matrix._43);
 	}
 
@@ -390,7 +392,7 @@ namespace PUBG
 
 		auto POV = CameraCacheL.POV;
 		Vector3D Rotation = POV.Rotation.Vector(); // FRotator 这个转换不知道会不会有问题
-		D3DMATRIX tempMatrix = D3DMATRIX::Matrix(Rotation); // Matrix
+		D3DMATRIX tempMatrix = FMath::Matrix(Rotation); // Matrix
 
 		Vector3D vAxisX, vAxisY, vAxisZ;
 
@@ -449,7 +451,6 @@ namespace PUBG
 
 	void pubgCon::printPlayLine()
 	{
-		g_global.update();
 		void *param(reinterpret_cast<void *>(this));
 		EnumActor([](AActor& actor, DWORD_PTR addr, void *parameter)->BOOL {
 			pubgCon* _this = reinterpret_cast<pubgCon *>(parameter);
@@ -469,6 +470,31 @@ namespace PUBG
 			}
 			return FALSE;
 		}, param);
+	}
+
+	void pubgCon::UpdatePlayersSkeleton()
+	{
+		std::lock_guard<std::mutex> l(PlayersSkeletonLock);
+		void *param(reinterpret_cast<void *>(this));
+		EnumActor([](AActor& actor, DWORD_PTR addr, void *parameter)->BOOL {
+			pubgCon* _this = reinterpret_cast<pubgCon *>(parameter);
+			std::string name = _this->GetActorNameById(actor.Name.ComparisonIndex);
+
+			if (actor.IsPlayer(name)) {
+				DWORD_PTR mesh;
+				_this->proc.memory().Read<DWORD_PTR>(addr + 0x400, mesh);
+				_this->GetLine(mesh, _this->PlayersSkeleton);
+				int count = 0;
+			}
+
+			return FALSE;
+		}, param);
+	}
+
+	void pubgCon::CopyPlayersSkeleton(std::vector<D3DXLine> &v)
+	{
+		std::lock_guard<std::mutex> l(PlayersSkeletonLock);
+		v = PlayersSkeleton;
 	}
 	// xuq add end
 
@@ -494,6 +520,8 @@ namespace PUBG
 
 	VOID pubgCon::MainLoop()
 	{
+		Overlay::instance()->SetupWindow();
+
 		while (!my_atomic.load())
 		{
 			InitObj();
@@ -504,14 +532,14 @@ namespace PUBG
 		do
 		{
 			// xuq add 临时代码 begin
-			if ((count % 10) == 0) {
-				g_global.update();
-				RefreshOffsets();
-				//MessageBox(NULL, "AAAA", NULL, NULL);
-				//EnumPlayComponent();
-				printPlayLine();
-			}
+			//if ((count % 10) == 0) {
+			//	//MessageBox(NULL, "AAAA", NULL, NULL);
+			//	EnumPlayComponent();
+			//	printPlayLine();
+			//}
 			// xuq add 临时代码 end
+
+			UpdatePlayersSkeleton();
 			GetPlayerCount();
 			Sleep(2000);
 			++count;

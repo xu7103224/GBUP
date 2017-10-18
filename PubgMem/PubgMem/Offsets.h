@@ -5,7 +5,7 @@
 #include <list>
 #define TARGETPROC  L"tslgame.exe"
 #define PROCESSNAME L"TslGame.exe"
-class FCameraCacheEntry;
+struct FCameraCacheEntry;
 // pUWorld  48 8B 1D ? ? ? ? 74 40
 #define PUWORLD_OFFSETS 0x37E4918
 

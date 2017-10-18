@@ -62,7 +62,10 @@ namespace PUBG
 		FCameraCacheEntry	GetCameraCache();
 		Vector3D			WorldToScreen(Vector3D & WorldLocation, FCameraCacheEntry & CameraCacheL);
 		std::vector<D3DXLine> &GetLine(DWORD_PTR mesh, std::vector<D3DXLine>& vl);//获取一组骨架线
-		void				printPlayLine();//测试用
+		void				printPlayLine();
+		void				UpdatePlayersSkeleton();				//更新所有玩家的骨骼
+		void				CopyPlayersSkeleton(std::vector<D3DXLine> &v);
+		//测试用
 		
 
 
@@ -90,6 +93,11 @@ namespace PUBG
 
 
 		std::unordered_set<AActor*> GetPlayerList();
+
+		//所有玩家骨骼线
+		std::vector<D3DXLine>		PlayersSkeleton;
+		std::mutex					PlayersSkeletonLock;
+		
 	private:
 		pubgCon();
 		static pubgCon* m_instance;
