@@ -386,19 +386,76 @@ namespace PUBG
 	}
 
 
+	//bool pubgCon::WorldToScreen(Vector3D WorldLocation, APlayerCameraManager CameraManager, out Vector2 Screenlocation)
+	//{
+	//	Vector2D Screenlocation = new Vector2D(0, 0);
+
+	//	var POV = CameraManager.CameraCache.POV;
+	//	FRotator Rotation = POV.Rotation;
+
+	//	Vector3 vAxisX, vAxisY, vAxisZ;
+	//	Rotation.GetAxes(out vAxisX, out vAxisY, out vAxisZ);
+
+	//	Vector3 vDelta = WorldLocation - POV.Location;
+	//	Vector3 vTransformed = new Vector3(Vector3.DotProduct(vDelta, vAxisY), Vector3.DotProduct(vDelta, vAxisZ), Vector3.DotProduct(vDelta, vAxisX));
+
+	//	if (vTransformed.Z < 1f)
+	//		vTransformed.Z = 1f;
+
+	//	float FovAngle = POV.FOV;
+	//	float ScreenCenterX = 1920 / 2;
+	//	float ScreenCenterY = 1080 / 2;
+
+	//	Screenlocation.X = ScreenCenterX + vTransformed.X * (ScreenCenterX / (float)Math.Tan(FovAngle * (float)Math.PI / 360)) / vTransformed.Z;
+	//	Screenlocation.Y = ScreenCenterY - vTransformed.Y * (ScreenCenterX / (float)Math.Tan(FovAngle * (float)Math.PI / 360)) / vTransformed.Z;
+
+	//	return true;
+	//}
+
+	//Vector3D pubgCon::WorldToScreen(Vector3D &WorldLocation, FCameraCacheEntry &CameraCacheL)
+	//{
+	//	Vector3D Screenlocation = Vector3D(0, 0, 0);
+
+	//	auto POV = CameraCacheL.POV;
+	//	Rotator Rotation = POV.Rotation; // FRotator 这个转换不知道会不会有问题
+	//	D3DMATRIX tempMatrix = FMath::Matrix(Rotation); // Matrix
+
+	//	Vector3D vAxisX, vAxisY, vAxisZ;
+
+	//	vAxisX = Vector3D(tempMatrix.m[0][0], tempMatrix.m[0][1], tempMatrix.m[0][2]);
+	//	vAxisY = Vector3D(tempMatrix.m[1][0], tempMatrix.m[1][1], tempMatrix.m[1][2]);
+	//	vAxisZ = Vector3D(tempMatrix.m[2][0], tempMatrix.m[2][1], tempMatrix.m[2][2]);
+
+	//	Vector3D vDelta = WorldLocation - POV.Location;
+	//	Vector3D vTransformed = Vector3D(vDelta.Dot(vAxisY), vDelta.Dot(vAxisZ), vDelta.Dot(vAxisX));
+
+	//	if (vTransformed.z < 1.f)
+	//		vTransformed.z = 1.f;
+
+	//	float FovAngle = POV.FOV;
+	//	float ScreenCenterX = g_global.screenWidth / 2.0f;
+	//	float ScreenCenterY = g_global.screenHeight / 2.0f;
+
+	//	Screenlocation.x = ScreenCenterX + vTransformed.x * (ScreenCenterX / tanf(FovAngle * (float)M_PI / 360.f)) / vTransformed.z;
+	//	Screenlocation.y = ScreenCenterY - vTransformed.y * (ScreenCenterX / tanf(FovAngle * (float)M_PI / 360.f)) / vTransformed.z;
+
+	//	return Screenlocation;
+	//}
+
 	Vector3D pubgCon::WorldToScreen(Vector3D &WorldLocation, FCameraCacheEntry &CameraCacheL)
 	{
 		Vector3D Screenlocation = Vector3D(0, 0, 0);
 
 		auto POV = CameraCacheL.POV;
-		Vector3D Rotation = POV.Rotation.Vector(); // FRotator 这个转换不知道会不会有问题
+		Rotator Rotation = POV.Rotation; // FRotator 这个转换不知道会不会有问题
 		D3DMATRIX tempMatrix = FMath::Matrix(Rotation); // Matrix
 
 		Vector3D vAxisX, vAxisY, vAxisZ;
+		Rotation.GetAxes(vAxisX, vAxisY, vAxisZ);
 
-		vAxisX = Vector3D(tempMatrix.m[0][0], tempMatrix.m[0][1], tempMatrix.m[0][2]);
-		vAxisY = Vector3D(tempMatrix.m[1][0], tempMatrix.m[1][1], tempMatrix.m[1][2]);
-		vAxisZ = Vector3D(tempMatrix.m[2][0], tempMatrix.m[2][1], tempMatrix.m[2][2]);
+		//vAxisX = Vector3D(tempMatrix.m[0][0], tempMatrix.m[0][1], tempMatrix.m[0][2]);
+		//vAxisY = Vector3D(tempMatrix.m[1][0], tempMatrix.m[1][1], tempMatrix.m[1][2]);
+		//vAxisZ = Vector3D(tempMatrix.m[2][0], tempMatrix.m[2][1], tempMatrix.m[2][2]);
 
 		Vector3D vDelta = WorldLocation - POV.Location;
 		Vector3D vTransformed = Vector3D(vDelta.Dot(vAxisY), vDelta.Dot(vAxisZ), vDelta.Dot(vAxisX));
@@ -415,7 +472,6 @@ namespace PUBG
 
 		return Screenlocation;
 	}
-
 	std::vector<D3DXLine> &pubgCon::GetLine(DWORD_PTR mesh, std::vector<D3DXLine>& vl)
 	{
 		Vector3D neckpos = GetBoneWithRotation(mesh, Bones::neck_01);
@@ -476,6 +532,7 @@ namespace PUBG
 	{
 		std::lock_guard<std::mutex> l(PlayersSkeletonLock);
 		void *param(reinterpret_cast<void *>(this));
+		PlayersSkeleton.clear();
 		EnumActor([](AActor& actor, DWORD_PTR addr, void *parameter)->BOOL {
 			pubgCon* _this = reinterpret_cast<pubgCon *>(parameter);
 			std::string name = _this->GetActorNameById(actor.Name.ComparisonIndex);

@@ -17,4 +17,5 @@ public:
 
 
 	Vector3D Vector() const;
+	void GetAxes(Vector3D & x, Vector3D & y, Vector3D & z);
 };

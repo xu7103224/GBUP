@@ -3,6 +3,7 @@
 #include "D3dx9math.h"
 #include "vector3D.h"
 #include "vector2D.h"
+#include "Rotator.h"
 #include <d3d9.h>
 
 
@@ -71,7 +72,7 @@ namespace FMath {
 
 	D3DMATRIX MatrixMultiplication(D3DMATRIX &pM1, D3DMATRIX &pM2);
 
-	D3DMATRIX Matrix(Vector3D &rot, Vector3D &origin = Vector3D(0, 0, 0));
+	D3DMATRIX Matrix(Rotator &rot, Vector3D &origin = Vector3D(0, 0, 0));
 };
 
 

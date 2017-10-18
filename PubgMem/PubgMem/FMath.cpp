@@ -65,11 +65,11 @@ namespace FMath {
 		return pOut;
 	}
 
-	D3DMATRIX Matrix(Vector3D & rot, Vector3D & origin)
+	D3DMATRIX Matrix(Rotator & rot, Vector3D & origin)
 	{
-		float radPitch = (rot.x * float(M_PI) / 180.f);
-		float radYaw = (rot.y * float(M_PI) / 180.f);
-		float radRoll = (rot.z * float(M_PI) / 180.f);
+		float radPitch = (rot.Pitch * float(M_PI) / 180.f);
+		float radYaw = (rot.Yaw * float(M_PI) / 180.f);
+		float radRoll = (rot.Roll * float(M_PI) / 180.f);
 
 		float SP = sinf(radPitch);
 		float CP = cosf(radPitch);
