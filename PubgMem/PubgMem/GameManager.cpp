@@ -57,9 +57,12 @@ namespace PUBG
 		proc.memory().Read<DWORD_PTR>(offsets.tlsGameBase + PUWORLD_OFFSETS, offsets.pUWorld);
 		proc.memory().Read<DWORD_PTR>(offsets.pUWorld + 0x140, offsets.pGameInstance);
 		proc.memory().Read<DWORD_PTR>(offsets.pGameInstance + 0x38, offsets.pLocalPlayerArray);
+		proc.memory().Read<DWORD_PTR>(offsets.pLocalPlayerArray + 0x0, offsets.pLocalPlayer);
+		proc.memory().Read<DWORD_PTR>(offsets.pLocalPlayer + 0x58, offsets.pViewportClient);
 		std::cout << "tlsGameBase = " << std::hex << offsets.tlsGameBase << "\n pUWorld = " << std::hex << offsets.pUWorld \
 			      << "\n pGameInstance = " << std::hex << offsets.pGameInstance << "\n pLocalPlayerArray = " << offsets.pLocalPlayerArray \
-			      << std::endl;
+			      << "\n pLocalPlayer = " << offsets.pLocalPlayer << "\n pViewportClient = " << offsets.pViewportClient \
+				  << std::endl;
 		
 		
 	}
@@ -100,12 +103,12 @@ namespace PUBG
 			//获取obj名字
 			//
 			std::string name = GetActorNameById(Actor.Name.ComparisonIndex);
-			// auto pos = GetActorPos(Addres);
-			// std::cout << "obj name = " << name \
-			//	<< ", x = " << std::to_string(pos.x)\
-			//	<< ", y = " << std::to_string(pos.y)\
-			//	<< ", z = " << std::to_string(pos.z)\
-			//	<< std::endl;
+			 //auto pos = GetActorPos(Addres);
+			 //std::cout << "obj name = " << name \
+				//<< ", x = " << std::to_string(pos.x)\
+				//<< ", y = " << std::to_string(pos.y)\
+				//<< ", z = " << std::to_string(pos.z)\
+				//<< std::endl;
 
 			if (Actor.IsPlayer(name)) {
 				++PlayerCounts;
@@ -196,7 +199,7 @@ namespace PUBG
 		DWORD_PTR fName;
 		char name[64] = { NULL };
 
-		proc.memory().Read<DWORD_PTR>(BaseAddress + 0x36DA610, fName);
+		proc.memory().Read<DWORD_PTR>(BaseAddress + NAME_OFFSETS, fName);
 		proc.memory().Read<DWORD_PTR>(fName + int(ID / 0x4000) * 8, fName);
 		proc.memory().Read<DWORD_PTR>(fName + 8 * int(ID % 0x4000), fName);
 		if (ReadProcessMemory(proc.core().handle(), (LPVOID)(fName + 16), name, sizeof(name) - 2, NULL) != 0)
@@ -353,7 +356,7 @@ namespace PUBG
 	FCameraCacheEntry pubgCon::GetCameraCache()
 	{
 		FCameraCacheEntry cce;
-		DWORD_PTR lp = reinterpret_cast<DWORD_PTR>(pLocalPlayer());
+		DWORD_PTR lp = offsets.pLocalPlayer;
 		DWORD_PTR temp;
 		proc.memory().Read<DWORD_PTR>(lp + FIELD_OFFSET(ULocalPlayer,PlayerController)/*0x30*/, temp);
 		proc.memory().Read<DWORD_PTR>(temp + FIELD_OFFSET(APlayerController, PlayerCameraManager)/*0x438*/, temp);
@@ -383,13 +386,12 @@ namespace PUBG
 
 	Vector3D pubgCon::WorldToScreen(Vector3D &WorldLocation, FCameraCacheEntry &CameraCacheL)
 	{
-		int s_width = 0;//s_width	//屏幕宽
-		int s_height = 0;//s_height	//屏幕高
+		int s_width = 1680;//s_width	//屏幕宽
+		int s_height = 1050;//s_height	//屏幕高
 		Vector3D Screenlocation = Vector3D(0, 0, 0);
 
 		auto POV = CameraCacheL.POV;
 		Vector3D Rotation = POV.Rotation.Vector(); // FRotator 这个转换不知道会不会有问题
-
 		D3DMATRIX tempMatrix = D3DMATRIX::Matrix(Rotation); // Matrix
 
 		Vector3D vAxisX, vAxisY, vAxisZ;
@@ -449,17 +451,23 @@ namespace PUBG
 
 	void pubgCon::printPlayLine()
 	{
+		g_global.update();
 		void *param(reinterpret_cast<void *>(this));
 		EnumActor([](AActor& actor, DWORD_PTR addr, void *parameter)->BOOL {
-			pubgCon *_this = reinterpret_cast<pubgCon *>(parameter);
-			DWORD_PTR mesh;
-			_this->proc.memory().Read<DWORD_PTR>(addr + 0x400, mesh);
-			std::vector<D3DXLine> vl;
-			_this->GetLine(mesh, vl);
-			int count = 0;
-			for (auto line : vl) {
-				std::cout << count << "> t1.x=" << line.t1.x << ", t1.y=" << line.t1.y\
-					<< ", t2.x = " << line.t2.x << ", t2.y = " << line.t2.y << std::endl;
+			pubgCon* _this = reinterpret_cast<pubgCon *>(parameter);
+			std::string name = _this->GetActorNameById(actor.Name.ComparisonIndex);
+
+			if (actor.IsPlayer(name)) {
+				DWORD_PTR mesh;
+				_this->proc.memory().Read<DWORD_PTR>(addr + 0x400, mesh);
+				std::vector<D3DXLine> vl;
+				_this->GetLine(mesh, vl);
+				int count = 0;
+
+				for (auto line : vl) {
+					std::cout << count << "> t1.x=" << line.t1.x << ", t1.y=" << line.t1.y\
+						<< ", t2.x = " << line.t2.x << ", t2.y = " << line.t2.y << std::endl;
+				}
 			}
 			return FALSE;
 		}, param);
@@ -475,7 +483,6 @@ namespace PUBG
 		{
 			try
 			{
-				//printPlayLine();
 				g_global.update();
 				RefreshOffsets();
 				my_atomic.store(TRUE);
@@ -494,13 +501,22 @@ namespace PUBG
 			InitObj();
 			Sleep(500);
 		}
+		int count = 0;
 		std::cout << "success!" << std::endl;
 		do
 		{
-			//MessageBox(NULL, "AAAA", NULL, NULL);
-			//EnumPlayComponent();
+			// xuq add 临时代码 begin
+			if ((count % 10) == 0) {
+				g_global.update();
+				RefreshOffsets();
+				//MessageBox(NULL, "AAAA", NULL, NULL);
+				//EnumPlayComponent();
+				printPlayLine();
+			}
+			// xuq add 临时代码 end
 			GetPlayerCount();
 			Sleep(2000);
+			++count;
 		} while (true);
 	}
 }
