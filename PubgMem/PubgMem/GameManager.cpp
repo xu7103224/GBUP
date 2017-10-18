@@ -564,7 +564,6 @@ namespace PUBG
 		{
 			try
 			{
-				g_global.update();
 				RefreshOffsets();
 				my_atomic.store(TRUE);
 			}
@@ -596,6 +595,7 @@ namespace PUBG
 			//}
 			// xuq add ¡Ÿ ±¥˙¬Î end
 
+			g_global.update();
 			UpdatePlayersSkeleton();
 			GetPlayerCount();
 			Sleep(2000);
