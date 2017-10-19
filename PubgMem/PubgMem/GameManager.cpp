@@ -130,48 +130,73 @@ namespace PUBG
 	VOID pubgCon::CacheNames()
 	{
 		std::string name = "";
-		for (int i(0), c1(0), c2(0), c3(0), c4(0), c5(0), c6(0); i < 200000; i++)
+		int item1(0), item2(0), item3(0), item4(0), item5(0);
+		for (int i(0), c1(0), c2(0), c3(0), c4(0), c5(0), c6(0); i < 100000; i++)
 		{
-			if (c1 == 4 && c2 == 3 && c3 == 4 && c4 == 5 && c5 == 3 && boat != 0 && c6 == 2)
-			{
-				std::cout << "IDs retrieved" << std::endl;
-				return;
-			}
 			name = GetActorNameById(i);
 			if (name == playerNames.at(0).c_str() || name == playerNames.at(1).c_str() || name == playerNames.at(2).c_str() || name == playerNames.at(3).c_str())
 			{
-				std::cout << name << " " << i << std::endl;
 				ActorIds[c1++] = i;
+				continue;
 			}
 			if (name == uazNames.at(0).c_str() || name == uazNames.at(1).c_str() || name == uazNames.at(2).c_str())
 			{
 				uaz[c2++] = i;
-				std::cout << name << " " << i << std::endl;
+				continue;
 			}
 			if (name == daciaNames.at(0).c_str() || name == daciaNames.at(1).c_str() || name == daciaNames.at(2).c_str() || name == daciaNames.at(3).c_str())
 			{
 				dacia[c3++] = i;
-				std::cout << name << " " << i << std::endl;
+				continue;
 			}
 			if (name == bikeNames.at(0).c_str() || name == bikeNames.at(1).c_str() || name == bikeNames.at(2).c_str() || name == bikeNames.at(3).c_str() || name == bikeNames.at(4).c_str())
 			{
-				std::cout << name << " " << i << std::endl;
 				motorbike[c4++] = i;
+				continue;
 			}
 			if (name == buggyNames.at(0).c_str() || name == buggyNames.at(1).c_str() || name == buggyNames.at(2).c_str())
 			{
-				std::cout << name << " " << i << std::endl;
 				buggy[c5++] = i;
+				continue;
 			}
 			if (name == boatName.at(0).c_str())
 			{
-				std::cout << name << " " << i << std::endl;
 				boat = i;
+				continue;
 			}
 			if (name == ItemName_[0] || name == ItemName_[1])
 			{
-				std::cout << name << " " << i << std::endl;
 				itemtype[c6++] = i;
+				continue;
+			}
+			///遍历Item 类别，比较费时间
+			{
+				for (auto str : Item_1)
+					if (str == name) {
+						item_1_ID.push_back(i);
+						goto EXIT_1;
+					}
+				for (auto str : Item_2)
+					if (str == name) {
+						item_2_ID.push_back(i);
+						goto EXIT_1;
+					}
+				for (auto str : Item_3)
+					if (str == name) {
+						item_3_ID.push_back(i);
+						goto EXIT_1;
+					}
+				for (auto str : Item_4)
+					if (str == name) {
+						item_4_ID.push_back(i);
+						goto EXIT_1;
+					}
+				for (auto str : Item_5)
+					if (str == name) {
+						item_5_ID.push_back(i);
+						goto EXIT_1;
+					}
+			EXIT_1: continue;
 			}
 		}
 		return VOID();
@@ -247,6 +272,10 @@ namespace PUBG
 				_this->OnVehicle(addr, vtype);
 			}
 
+			//处理物品生成点
+			if (_this->IsDroppedItemGroup(actor)) {
+				//_this->OnItem(addr);
+			}
 			return FALSE;
 		}, param);
 	}
@@ -264,6 +293,21 @@ namespace PUBG
 			if (ActorIds[i] == actor.Name.ComparisonIndex)
 				return TRUE;
 		}
+		return FALSE;
+	}
+
+	BOOL pubgCon::IsDroppedItemGroup(AActor * ptr)
+	{
+		AActor acotr;
+		proc.memory().Read<AActor>(reinterpret_cast<DWORD_PTR>(ptr), acotr);
+		return IsDroppedItemGroup(acotr);
+	}
+
+	BOOL pubgCon::IsDroppedItemGroup(AActor & actor)
+	{
+		if (actor.Name.ComparisonIndex == itemtype[0]
+			|| actor.Name.ComparisonIndex == itemtype[1])
+			return TRUE;
 		return FALSE;
 	}
 
@@ -457,6 +501,38 @@ namespace PUBG
 		++PlayerCounts;
 	}
 
+	void pubgCon::OnItem(DWORD_PTR actorPtr)
+	{
+		DWORD_PTR DroppedItemGroupArray(0);
+		
+		int count(0);
+		proc.memory().Read<DWORD_PTR>(actorPtr + 0x2D8, DroppedItemGroupArray);
+		proc.memory().Read<int>(actorPtr + 0x2E0, count);
+		for (int i(0); i < count; i++) {
+			wchar_t entityname[64] = { NULL };
+			Vector3D  relative;
+			DWORD_PTR pADroppedItemGroup(0);
+			DWORD_PTR pUItem(0);
+			DWORD_PTR pUItemFString(0);
+			DWORD_PTR pItemName(0);
+			DWORD     ItemId(0);
+			uint8_t     Category(0);
+
+			proc.memory().Read<DWORD_PTR>(DroppedItemGroupArray + i * 0x10, pADroppedItemGroup);
+			proc.memory().Read<Vector3D>(pADroppedItemGroup + 0x1E0, relative);
+			proc.memory().Read<DWORD_PTR>(pADroppedItemGroup + 0x448, pUItem);
+			proc.memory().Read<uint8_t>(pUItem + 0x170, Category);
+			proc.memory().Read<DWORD_PTR>(pUItem + 0x40, pUItemFString);
+			proc.memory().Read<DWORD>(pUItem + 0x18, ItemId);
+
+			proc.memory().Read<DWORD_PTR>(pUItemFString + 0x28, pItemName);
+			ItemListD.push_back({ ItemId , Category , relative.x, relative.y, relative.z });
+		
+		}
+		
+		
+	}
+
 	void pubgCon::OnVehicle(DWORD_PTR vehicleaddr, VehicleType type)
 	{
 
@@ -518,6 +594,7 @@ namespace PUBG
 			//clear
 			//
 			PlayersSkeleton.clear();
+			ItemListD.clear();
 			PlayerCounts = 0;
 
 			Sleep(1);

@@ -13,6 +13,16 @@ namespace PUBG
 		D3DXVECTOR2 t2;
 	};
 
+	struct DroppedItemKey
+	{
+		DWORD   index;
+		uint8_t Category;
+		FLOAT x;
+		FLOAT y;
+		FLOAT z;
+	};
+
+
 	class Overlay
 	{
 	public:

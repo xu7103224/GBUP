@@ -24,6 +24,7 @@
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="DynImport.h" />
     <ClInclude Include="FunctionTypes.h" />
+    <ClInclude Include="ItemNameDetials.h" />
     <ClInclude Include="Macro.h" />
     <ClInclude Include="NativeEnums.h" />
     <ClInclude Include="NativeStructures.h" />

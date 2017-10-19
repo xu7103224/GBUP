@@ -46,6 +46,12 @@ namespace PUBG
 	extern int buggy[3];
 	extern int boat;
 	extern int itemtype[2];
+	extern std::vector<int>  item_1_ID;
+	extern std::vector<int>  item_2_ID;
+	extern std::vector<int>  item_3_ID;
+	extern std::vector<int>  item_4_ID;
+	extern std::vector<int>  item_5_ID;
+
 	extern std::vector<std::string> playerNames;
 	extern std::vector<std::string> uazNames;
 	extern std::vector<std::string> buggyNames;
@@ -53,6 +59,13 @@ namespace PUBG
 	extern std::vector<std::string> bikeNames;
 	extern std::vector<std::string> boatName;
 	extern std::vector<std::string> ItemName_;
+
+	extern std::vector<std::string> Item_1;
+	extern std::vector<std::string> Item_2;
+	extern std::vector<std::string> Item_3;
+	extern std::vector<std::string> Item_4;
+	extern std::vector<std::string> Item_5;
+
 	extern std::list<int> upper_part;
 	extern std::list<int> right_arm;
 	extern std::list<int> left_arm;

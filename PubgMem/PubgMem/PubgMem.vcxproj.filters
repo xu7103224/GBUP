@@ -124,6 +124,9 @@
     <ClInclude Include="Overlay.h">
       <Filter>window</Filter>
     </ClInclude>
+    <ClInclude Include="ItemNameDetials.h">
+      <Filter>GameCheat</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NativeSubsystem.cpp">

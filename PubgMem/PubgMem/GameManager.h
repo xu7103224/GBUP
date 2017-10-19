@@ -7,7 +7,7 @@
 #include <future>
 #include <atomic>
 #include <mutex>
-#include <unordered_set>
+#include <unordered_map>
 #include <vector>
 #include <list>
 #include <windows.h>
@@ -17,6 +17,8 @@ typedef BOOL ( __stdcall *_EnumActorCallback)(AActor &actor, DWORD_PTR actoraddr
 
 namespace PUBG
 {
+	
+
 	enum ActorType {
 		Player,
 		Vehicle,
@@ -61,12 +63,12 @@ namespace PUBG
 		Vector3D			GetBoneWithRotation(DWORD_PTR mesh, int id);
 		FCameraCacheEntry	GetCameraCache();	//获取摄像头
 		Vector3D			WorldToScreen(Vector3D & WorldLocation, FCameraCacheEntry & CameraCacheL);
-		//void				UpdatePlayersSkeleton();										//更新所有玩家的骨骼
+		//void				UpdatePlayersSkeleton();										    //更新所有玩家的骨骼
 		std::vector<D3DXLine> &GetSkeletons(DWORD_PTR mesh, std::vector<D3DXLine>& vl);			//获取一组骨架线
 
-		void				OnPlayer(ACharacter &player);//所有关于玩家的操作在这里
+		void				OnPlayer(ACharacter &player);                      //所有关于玩家的操作在这里
 		void				OnVehicle(DWORD_PTR vehicleaddr, VehicleType type);//所有关于载具的操作在这里
-
+		void                OnItem(DWORD_PTR actorPtr);                        //所有物品生成点的操作在这里
 		
 
 
@@ -89,6 +91,8 @@ namespace PUBG
 		VOID			CacheNames();
 		BOOL			IsPlayerActor(AActor* ptr);
 		BOOL			IsPlayerActor(AActor &actor);
+		BOOL            IsDroppedItemGroup(AActor* ptr);
+		BOOL            IsDroppedItemGroup(AActor &actor);
 		ULevel			GetPersistentLevel();
 		VehicleType		IsVehicleActor(AActor* ptr);
 		VehicleType		IsVehicleActor(AActor &actor);
@@ -99,6 +103,9 @@ namespace PUBG
 
 		//所有玩家骨骼线
 		std::vector<D3DXLine>		PlayersSkeleton;
+
+		//可探测物品点
+		std::vector<DroppedItemKey> ItemListD;
 
 		//可探测玩家数量
 		int PlayerCounts;
