@@ -117,7 +117,9 @@ namespace PUBG
 	}
 
 	void Overlay::RenderPlayersSkeleton() {
-		for (auto line : Skeletons) {
+		std::vector<D3DXLine> skeletons;
+		CopySkeletons(skeletons);
+		for (auto line : skeletons) {
 			DrawLine(line.t1.x, line.t1.y, line.t2.x, line.t2.y, D3DCOLOR_ARGB(255, 153, 249, 9));
 		}
 	}
@@ -140,9 +142,17 @@ namespace PUBG
 
 	void Overlay::updateSkeletons(std::vector<D3DXLine>& skeletons)
 	{
-		static std::mutex lock;
-		std::lock_guard<std::mutex> l(lock);
-		Skeletons = skeletons;
+		std::lock_guard<std::mutex> l(SkeletonsLock);
+		Skeletons.clear();
+		for (auto it : skeletons)
+			Skeletons.push_back(it);
+	}
+
+	void Overlay::CopySkeletons(std::vector<D3DXLine>& skeletons)
+	{
+		std::lock_guard<std::mutex> l(SkeletonsLock);
+		for (auto it : Skeletons) 
+			skeletons.push_back(it);
 	}
 
 	DWORD Overlay::ThreadProc(LPVOID lpThreadParameter)

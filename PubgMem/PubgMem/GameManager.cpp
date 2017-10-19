@@ -471,6 +471,7 @@ namespace PUBG
 			try
 			{
 				RefreshOffsets();
+				CacheNames();
 				my_atomic.store(TRUE);
 			}
 			catch (...){

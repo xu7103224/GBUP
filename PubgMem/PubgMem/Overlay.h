@@ -4,7 +4,7 @@
 #include <d3d9.h>
 #include <D3dx9core.h>
 #include <vector>
-
+#include <mutex>
 
 namespace PUBG
 {
@@ -32,6 +32,8 @@ namespace PUBG
 
 		//
 		void updateSkeletons(std::vector<D3DXLine> &skeletons);
+		void CopySkeletons(std::vector<D3DXLine> &skeletons);
+
 	private:
 		Overlay();
 		static DWORD WINAPI ThreadProc(LPVOID lpThreadParameter);
@@ -51,6 +53,8 @@ namespace PUBG
 		MARGINS  margin;
 		//所有玩家骨骼线
 		std::vector<D3DXLine>		Skeletons;
+		std::mutex					SkeletonsLock;
+
 	};
 
 }
