@@ -3,14 +3,19 @@
 #include <Uxtheme.h>
 #include <d3d9.h>
 #include <D3dx9core.h>
+#include <vector>
 
 
 namespace PUBG
 {
+	struct D3DXLine {
+		D3DXVECTOR2 t1;
+		D3DXVECTOR2 t2;
+	};
+
 	class Overlay
 	{
 	public:
-		Overlay();
 		~Overlay();
 		static Overlay *instance();
 		BOOL SetupWindow();
@@ -24,7 +29,11 @@ namespace PUBG
 		inline HWND hWnd() { return _hWnd; };
 		inline void hWnd(HWND hwd) { _hWnd = hwd; };
 		
+
+		//
+		void updateSkeletons(std::vector<D3DXLine> &skeletons);
 	private:
+		Overlay();
 		static DWORD WINAPI ThreadProc(LPVOID lpThreadParameter);
 		static LRESULT CALLBACK WindowProc(HWND _hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 		void Render();
@@ -40,6 +49,8 @@ namespace PUBG
 		LPDIRECT3DDEVICE9 d3ddev;
 		LPD3DXFONT pFont;
 		MARGINS  margin;
+		//所有玩家骨骼线
+		std::vector<D3DXLine>		Skeletons;
 	};
 
 }

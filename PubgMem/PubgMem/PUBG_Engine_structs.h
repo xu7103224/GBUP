@@ -373,3 +373,14 @@ enum class ECollisionChannel : uint8_t
 	ECC_OverlapAll_Deprecated = 32,
 	ECC_MAX = 33
 };
+
+
+// Enum Engine.EAutoPossessAI
+enum class EAutoPossessAI : uint8_t
+{
+	EAutoPossessAI__Disabled = 0,
+	EAutoPossessAI__PlacedInWorld = 1,
+	EAutoPossessAI__Spawned = 2,
+	EAutoPossessAI__PlacedInWorldOrSpawned = 3,
+	EAutoPossessAI__EAutoPossessAI_MAX = 4
+};

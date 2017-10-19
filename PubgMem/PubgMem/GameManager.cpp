@@ -1,7 +1,6 @@
 #include "GameManager.h"
 #include <iostream>
 #include <tchar.h>
-#include "Overlay.h"
 #include "FMath.h"
 #include "PUBG_Engine_classes.h"
 #include "PUBG_Engine_structs.h"
@@ -13,7 +12,8 @@ namespace PUBG
 
 	pubgCon::pubgCon() 
 		: status(STATUS_SUCCESS)
-		, BaseAddress(0)
+		, BaseAddress(0),
+		PlayerCounts(0)
 	{
 		my_atomic.store(FALSE);
 
@@ -126,6 +126,7 @@ namespace PUBG
 		ULevel ulevel = GetPersistentLevel();
 		return ulevel.AActors.Count;
 	}
+
 	VOID pubgCon::CacheNames()
 	{
 		std::string name = "";
@@ -225,7 +226,7 @@ namespace PUBG
 		return FALSE;
 	}
 
-	void pubgCon::EnumPlayComponent()
+	void pubgCon::EnumAllObj()
 	{
 		void *param( reinterpret_cast<void *>(this));
 		EnumActor([](AActor& actor, DWORD_PTR addr, void *parameter)->BOOL {
@@ -233,27 +234,19 @@ namespace PUBG
 			USceneComponent comp;
 
 			std::string name = _this->GetActorNameById(actor.Name.ComparisonIndex);
-			if (actor.IsPlayer(name)) {
-				_this->proc.memory().Read<USceneComponent>(reinterpret_cast<DWORD_PTR>(actor.RootComponent), comp);
-				int tier = 0;
-				std::function<void(USceneComponent& comp, int tier)> fn;
-
-				fn = [&](USceneComponent& comp, int tier) {
-
-					std::cout << "tier = " << tier << ", name = " << _this->GetActorNameById(comp.Name.ComparisonIndex) << std::endl;
-					if (comp.AttachParent) {
-						for (int i(0); i < comp.AttachChildren.Count; ++i) {
-							USceneComponent sub;
-							DWORD_PTR Addres;
-							_this->proc.memory().Read<DWORD_PTR>(reinterpret_cast<DWORD_PTR>(comp.AttachChildren.Data) + i * 8, Addres);
-							_this->proc.memory().Read<USceneComponent>(Addres, sub);
-							fn(sub, tier + 1);
-						}
-					}
-				};
-				fn(comp, tier);
-
+			//处理玩家数据
+			if (_this->IsPlayerActor(actor)) {
+				ACharacter player;
+				_this->proc.memory().Read<ACharacter>(addr, player);
+				_this->OnPlayer(player);
 			}
+
+			//处理载具数据
+			VehicleType vtype;
+			if ((vtype = _this->IsVehicleActor(actor)) != NONVehic) {
+				_this->OnVehicle(addr, vtype);
+			}
+
 			return FALSE;
 		}, param);
 	}
@@ -262,33 +255,44 @@ namespace PUBG
 	{
 		AActor temp;
 		proc.memory().Read<AActor>(reinterpret_cast<DWORD_PTR>(ptr), temp);
+		return IsPlayerActor(temp);
+	}
+
+	BOOL pubgCon::IsPlayerActor(AActor &actor)
+	{
 		for (int i(0); i < 4; i++) {
-			if (ActorIds[i] == temp.Name.ComparisonIndex)
+			if (ActorIds[i] == actor.Name.ComparisonIndex)
 				return TRUE;
 		}
 		return FALSE;
 	}
+
 	VehicleType pubgCon::IsVehicleActor(AActor * ptr)
 	{
 		AActor temp;
 		proc.memory().Read<AActor>(reinterpret_cast<DWORD_PTR>(ptr), temp);
+		return IsVehicleActor(temp);
+	}
+
+	VehicleType pubgCon::IsVehicleActor(AActor & actor)
+	{
 		for (int i(0); i < 3; i++) {//UAZ
-			if (uaz[i] == temp.Name.ComparisonIndex)
+			if (uaz[i] == actor.Name.ComparisonIndex)
 				return UAZ;
 		}
 		for (int i(0); i < 4; i++) { //DACIA
-			if (dacia[i] == temp.Name.ComparisonIndex)
+			if (dacia[i] == actor.Name.ComparisonIndex)
 				return DACIA;
 		}
 		for (int i(0); i < 5; i++) { //MOTORBIKE
-			if (motorbike[i] == temp.Name.ComparisonIndex)
+			if (motorbike[i] == actor.Name.ComparisonIndex)
 				return MOTORBIKE;
 		}
 		for (int i(0); i < 3; i++) { //BUGGY
-			if (motorbike[i] == temp.Name.ComparisonIndex)
+			if (motorbike[i] == actor.Name.ComparisonIndex)
 				return BUGGY;
 		}
-		if (boat == temp.Name.ComparisonIndex)
+		if (boat == actor.Name.ComparisonIndex)
 			return BOAT;
 		else
 			return NONVehic;
@@ -354,7 +358,6 @@ namespace PUBG
 		return &AllActors;
 	}
 
-	// xuq add begin
 	FCameraCacheEntry pubgCon::GetCameraCache()
 	{
 		FCameraCacheEntry cce;
@@ -385,77 +388,16 @@ namespace PUBG
 		return Vector3D(Matrix._41, Matrix._42, Matrix._43);
 	}
 
-
-	//bool pubgCon::WorldToScreen(Vector3D WorldLocation, APlayerCameraManager CameraManager, out Vector2 Screenlocation)
-	//{
-	//	Vector2D Screenlocation = new Vector2D(0, 0);
-
-	//	var POV = CameraManager.CameraCache.POV;
-	//	FRotator Rotation = POV.Rotation;
-
-	//	Vector3 vAxisX, vAxisY, vAxisZ;
-	//	Rotation.GetAxes(out vAxisX, out vAxisY, out vAxisZ);
-
-	//	Vector3 vDelta = WorldLocation - POV.Location;
-	//	Vector3 vTransformed = new Vector3(Vector3.DotProduct(vDelta, vAxisY), Vector3.DotProduct(vDelta, vAxisZ), Vector3.DotProduct(vDelta, vAxisX));
-
-	//	if (vTransformed.Z < 1f)
-	//		vTransformed.Z = 1f;
-
-	//	float FovAngle = POV.FOV;
-	//	float ScreenCenterX = 1920 / 2;
-	//	float ScreenCenterY = 1080 / 2;
-
-	//	Screenlocation.X = ScreenCenterX + vTransformed.X * (ScreenCenterX / (float)Math.Tan(FovAngle * (float)Math.PI / 360)) / vTransformed.Z;
-	//	Screenlocation.Y = ScreenCenterY - vTransformed.Y * (ScreenCenterX / (float)Math.Tan(FovAngle * (float)Math.PI / 360)) / vTransformed.Z;
-
-	//	return true;
-	//}
-
-	//Vector3D pubgCon::WorldToScreen(Vector3D &WorldLocation, FCameraCacheEntry &CameraCacheL)
-	//{
-	//	Vector3D Screenlocation = Vector3D(0, 0, 0);
-
-	//	auto POV = CameraCacheL.POV;
-	//	Rotator Rotation = POV.Rotation; // FRotator 这个转换不知道会不会有问题
-	//	D3DMATRIX tempMatrix = FMath::Matrix(Rotation); // Matrix
-
-	//	Vector3D vAxisX, vAxisY, vAxisZ;
-
-	//	vAxisX = Vector3D(tempMatrix.m[0][0], tempMatrix.m[0][1], tempMatrix.m[0][2]);
-	//	vAxisY = Vector3D(tempMatrix.m[1][0], tempMatrix.m[1][1], tempMatrix.m[1][2]);
-	//	vAxisZ = Vector3D(tempMatrix.m[2][0], tempMatrix.m[2][1], tempMatrix.m[2][2]);
-
-	//	Vector3D vDelta = WorldLocation - POV.Location;
-	//	Vector3D vTransformed = Vector3D(vDelta.Dot(vAxisY), vDelta.Dot(vAxisZ), vDelta.Dot(vAxisX));
-
-	//	if (vTransformed.z < 1.f)
-	//		vTransformed.z = 1.f;
-
-	//	float FovAngle = POV.FOV;
-	//	float ScreenCenterX = g_global.screenWidth / 2.0f;
-	//	float ScreenCenterY = g_global.screenHeight / 2.0f;
-
-	//	Screenlocation.x = ScreenCenterX + vTransformed.x * (ScreenCenterX / tanf(FovAngle * (float)M_PI / 360.f)) / vTransformed.z;
-	//	Screenlocation.y = ScreenCenterY - vTransformed.y * (ScreenCenterX / tanf(FovAngle * (float)M_PI / 360.f)) / vTransformed.z;
-
-	//	return Screenlocation;
-	//}
-
 	Vector3D pubgCon::WorldToScreen(Vector3D &WorldLocation, FCameraCacheEntry &CameraCacheL)
 	{
 		Vector3D Screenlocation = Vector3D(0, 0, 0);
 
 		auto POV = CameraCacheL.POV;
-		Rotator Rotation = POV.Rotation; // FRotator 这个转换不知道会不会有问题
-		D3DMATRIX tempMatrix = FMath::Matrix(Rotation); // Matrix
+		Rotator Rotation = POV.Rotation;
+		D3DMATRIX tempMatrix = FMath::Matrix(Rotation); 
 
 		Vector3D vAxisX, vAxisY, vAxisZ;
 		Rotation.GetAxes(vAxisX, vAxisY, vAxisZ);
-
-		//vAxisX = Vector3D(tempMatrix.m[0][0], tempMatrix.m[0][1], tempMatrix.m[0][2]);
-		//vAxisY = Vector3D(tempMatrix.m[1][0], tempMatrix.m[1][1], tempMatrix.m[1][2]);
-		//vAxisZ = Vector3D(tempMatrix.m[2][0], tempMatrix.m[2][1], tempMatrix.m[2][2]);
 
 		Vector3D vDelta = WorldLocation - POV.Location;
 		Vector3D vTransformed = Vector3D(vDelta.Dot(vAxisY), vDelta.Dot(vAxisZ), vDelta.Dot(vAxisX));
@@ -472,7 +414,8 @@ namespace PUBG
 
 		return Screenlocation;
 	}
-	std::vector<D3DXLine> &pubgCon::GetLine(DWORD_PTR mesh, std::vector<D3DXLine>& vl)
+
+	std::vector<D3DXLine> &pubgCon::GetSkeletons(DWORD_PTR mesh, std::vector<D3DXLine>& vl)
 	{
 		Vector3D neckpos = GetBoneWithRotation(mesh, Bones::neck_01);
 		Vector3D pelvispos = GetBoneWithRotation(mesh, Bones::pelvis);
@@ -505,56 +448,19 @@ namespace PUBG
 		return vl;
 	}
 
-	void pubgCon::printPlayLine()
+	void pubgCon::OnPlayer(ACharacter & player)
 	{
-		void *param(reinterpret_cast<void *>(this));
-		EnumActor([](AActor& actor, DWORD_PTR addr, void *parameter)->BOOL {
-			pubgCon* _this = reinterpret_cast<pubgCon *>(parameter);
-			std::string name = _this->GetActorNameById(actor.Name.ComparisonIndex);
+		//获取骨架
+		GetSkeletons(reinterpret_cast<DWORD_PTR>(player.Mesh), PlayersSkeleton);
 
-			if (actor.IsPlayer(name)) {
-				DWORD_PTR mesh;
-				_this->proc.memory().Read<DWORD_PTR>(addr + 0x400, mesh);
-				std::vector<D3DXLine> vl;
-				_this->GetLine(mesh, vl);
-				int count = 0;
-
-				for (auto line : vl) {
-					std::cout << count << "> t1.x=" << line.t1.x << ", t1.y=" << line.t1.y\
-						<< ", t2.x = " << line.t2.x << ", t2.y = " << line.t2.y << std::endl;
-				}
-			}
-			return FALSE;
-		}, param);
+		//玩家计数
+		++PlayerCounts;
 	}
 
-	void pubgCon::UpdatePlayersSkeleton()
+	void pubgCon::OnVehicle(DWORD_PTR vehicleaddr, VehicleType type)
 	{
-		std::lock_guard<std::mutex> l(PlayersSkeletonLock);
-		void *param(reinterpret_cast<void *>(this));
-		PlayersSkeleton.clear();
-		EnumActor([](AActor& actor, DWORD_PTR addr, void *parameter)->BOOL {
-			pubgCon* _this = reinterpret_cast<pubgCon *>(parameter);
-			std::string name = _this->GetActorNameById(actor.Name.ComparisonIndex);
 
-			if (actor.IsPlayer(name)) {
-				DWORD_PTR mesh;
-				_this->proc.memory().Read<DWORD_PTR>(addr + 0x400, mesh);
-				_this->GetLine(mesh, _this->PlayersSkeleton);
-				int count = 0;
-			}
-
-			return FALSE;
-		}, param);
 	}
-
-	void pubgCon::CopyPlayersSkeleton(std::vector<D3DXLine> &v)
-	{
-		std::lock_guard<std::mutex> l(PlayersSkeletonLock);
-		v = PlayersSkeleton;
-	}
-	// xuq add end
-
 
 	VOID pubgCon::InitObj()
 	{
@@ -584,21 +490,36 @@ namespace PUBG
 			Sleep(500);
 		}
 		int count = 0;
-		std::cout << "success!" << std::endl;
+		std::cout << "init success!" << std::endl;
+
 		do
 		{
-			// xuq add 临时代码 begin
-			//if ((count % 10) == 0) {
-			//	//MessageBox(NULL, "AAAA", NULL, NULL);
-			//	EnumPlayComponent();
-			//	printPlayLine();
-			//}
-			// xuq add 临时代码 end
-
+			//
+			//update
+			//
 			g_global.update();
-			UpdatePlayersSkeleton();
-			GetPlayerCount();
-			Sleep(2000);
+			EnumAllObj();
+			
+			//
+			//update window data
+			//
+			Overlay *wnd = Overlay::instance();
+			wnd->updateSkeletons(PlayersSkeleton);
+#ifdef _DEBUG
+			static int loopcount = 0;
+			++loopcount;
+			if((loopcount%2000)==0){ 
+				std::cout << "Players counts =" << PlayerCounts << std::endl;
+			}
+#endif // _DEBUG
+
+			//
+			//clear
+			//
+			PlayersSkeleton.clear();
+			PlayerCounts = 0;
+
+			Sleep(1);
 			++count;
 		} while (true);
 	}

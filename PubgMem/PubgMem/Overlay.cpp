@@ -11,7 +11,7 @@
 
 namespace PUBG
 {
-	Overlay *Overlay::self = new Overlay();
+	Overlay * Overlay::self = Overlay::instance();
 
 	Overlay::Overlay() :_hWnd(NULL),
 		twnd(NULL),
@@ -37,7 +37,8 @@ namespace PUBG
 
 	Overlay * Overlay::instance()
 	{
-		return self;
+		static Overlay *_this = new Overlay();
+		return _this;
 	}
 
 	BOOL Overlay::SetupWindow()
@@ -116,9 +117,7 @@ namespace PUBG
 	}
 
 	void Overlay::RenderPlayersSkeleton() {
-		std::vector<D3DXLine> vps;
-		pubgCon::instance()->CopyPlayersSkeleton(vps);
-		for (auto line : vps) {
+		for (auto line : Skeletons) {
 			DrawLine(line.t1.x, line.t1.y, line.t2.x, line.t2.y, D3DCOLOR_ARGB(255, 153, 249, 9));
 		}
 	}
@@ -137,6 +136,13 @@ namespace PUBG
 		d3ddev->EndScene();    // ends the 3D scene
 
 		d3ddev->Present(NULL, NULL, NULL, NULL);   // displays the created frame on the screen
+	}
+
+	void Overlay::updateSkeletons(std::vector<D3DXLine>& skeletons)
+	{
+		static std::mutex lock;
+		std::lock_guard<std::mutex> l(lock);
+		Skeletons = skeletons;
 	}
 
 	DWORD Overlay::ThreadProc(LPVOID lpThreadParameter)
@@ -169,7 +175,10 @@ namespace PUBG
 			GetWindowRect(_this->twnd, &rc);
 			_this->s_width = rc.right - rc.left;
 			_this->s_height = rc.bottom - rc.top;
+
+			//SetWindowPos(_this->_hWnd, HWND_TOPMOST, rc.left, rc.top, _this->s_width, _this->s_height, SWP_NOMOVE);
 			MoveWindow(_this->_hWnd, rc.left, rc.top, _this->s_width, _this->s_height, true);
+			//SetParent(_this->_hWnd, _this->twnd);
 
 			//render your esp
 			_this->Render();
@@ -177,7 +186,6 @@ namespace PUBG
 			Sleep(5);
 		}
 		return msg.wParam;
-		return 0;
 	}
 
 	LRESULT CALLBACK Overlay::WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)

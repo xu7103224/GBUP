@@ -92,12 +92,6 @@ struct FQuat
 	float w;
 };
 
-struct D3DXLine{
-	D3DXVECTOR2 t1;
-	D3DXVECTOR2 t2;
-};
-
-
 struct FTransform
 {
 	FQuat									Rotation;                                                 // 0x0000(0x0010) (CPF_Edit, CPF_BlueprintVisible, CPF_SaveGame, CPF_IsPlainOldData)
@@ -1040,3 +1034,154 @@ public:
 	unsigned char                                      UnknownData02[0x107];                                     // 0x0089(0x0107) MISSED OFFSET
 };
 
+struct FVector_NetQuantize100 : public Vector3D
+{
+
+};
+
+// ScriptStruct Engine.BasedMovementInfo
+// 0x0030
+struct FBasedMovementInfo
+{
+	class UPrimitiveComponent*                         MovementBase;                                             // 0x0000(0x0008) (CPF_ExportObject, CPF_ZeroConstructor, CPF_InstancedReference, CPF_IsPlainOldData)
+	struct FName                                       BoneName;                                                 // 0x0008(0x0008) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	struct FVector_NetQuantize100                      Location;                                                 // 0x0010(0x000C)
+	class Rotator                                      Rotation;                                                 // 0x001C(0x000C) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	bool                                               bServerHasBaseComponent;                                  // 0x0028(0x0001) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	bool                                               bRelativeRotation;                                        // 0x0029(0x0001) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	bool                                               bServerHasVelocity;                                       // 0x002A(0x0001) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	unsigned char                                      UnknownData00[0x5];                                       // 0x002B(0x0005) MISSED OFFSET
+};
+
+
+// ScriptStruct Engine.Vector_NetQuantize10
+// 0x0000 (0x000C - 0x000C)
+struct FVector_NetQuantize10 : public Vector3D
+{
+};
+
+// ScriptStruct Engine.RootMotionSourceSettings
+// 0x0001
+struct FRootMotionSourceSettings
+{
+	unsigned char                                      Flags;                                                    // 0x0000(0x0001) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+};
+
+// ScriptStruct Engine.RootMotionSourceGroup
+// 0x0100
+struct alignas(8) FRootMotionSourceGroup
+{
+	unsigned char                                      UnknownData00[0xE8];                                      // 0x0000(0x00E8) MISSED OFFSET
+	bool                                               bHasAdditiveSources;                                      // 0x00E8(0x0001) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	bool                                               bHasOverrideSources;                                      // 0x00E9(0x0001) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	unsigned char                                      UnknownData01[0x2];                                       // 0x00EA(0x0002) MISSED OFFSET
+	struct FVector_NetQuantize10                       LastPreAdditiveVelocity;                                  // 0x00EC(0x000C)
+	bool                                               bIsAdditiveVelocityApplied;                               // 0x00F8(0x0001) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	struct FRootMotionSourceSettings                   LastAccumulatedSettings;                                  // 0x00F9(0x0001)
+	unsigned char                                      UnknownData02[0x6];                                       // 0x00FA(0x0006) MISSED OFFSET
+};
+
+// Class Engine.Pawn
+// 0x0060 (0x0400 - 0x03A0)
+class APawn : public AActor
+{
+public:
+	unsigned char                                      UnknownData00[0x8];                                       // 0x03A0(0x0008) MISSED OFFSET
+	unsigned char                                      bUseControllerRotationPitch : 1;                          // 0x03A8(0x0001) (CPF_Edit, CPF_BlueprintVisible)
+	unsigned char                                      bUseControllerRotationYaw : 1;                            // 0x03A8(0x0001) (CPF_Edit, CPF_BlueprintVisible)
+	unsigned char                                      bUseControllerRotationRoll : 1;                           // 0x03A8(0x0001) (CPF_Edit, CPF_BlueprintVisible)
+	unsigned char                                      bCanAffectNavigationGeneration : 1;                       // 0x03A8(0x0001) (CPF_Edit, CPF_BlueprintVisible, CPF_BlueprintReadOnly)
+	unsigned char                                      UnknownData01[0x3];                                       // 0x03A9(0x0003) MISSED OFFSET
+	float                                              BaseEyeHeight;                                            // 0x03AC(0x0004) (CPF_Edit, CPF_BlueprintVisible, CPF_ZeroConstructor, CPF_IsPlainOldData)
+	TEnumAsByte<EAutoReceiveInput>                     AutoPossessPlayer;                                        // 0x03B0(0x0001) (CPF_Edit, CPF_ZeroConstructor, CPF_IsPlainOldData)
+	TEnumAsByte<EAutoPossessAI>                        AutoPossessAI;                                            // 0x03B1(0x0001) (CPF_Edit, CPF_ZeroConstructor, CPF_IsPlainOldData)
+	unsigned char                                      UnknownData02[0x6];                                       // 0x03B2(0x0006) MISSED OFFSET
+	class UClass*                                      AIControllerClass;                                        // 0x03B8(0x0008) (CPF_Edit, CPF_BlueprintVisible, CPF_ZeroConstructor, CPF_IsPlainOldData)
+	class APlayerState*                                PlayerState;                                              // 0x03C0(0x0008) (CPF_BlueprintVisible, CPF_BlueprintReadOnly, CPF_Net, CPF_ZeroConstructor, CPF_IsPlainOldData)
+	uint16_t                                           RemoteViewPitch;                                          // 0x03C8(0x0002) (CPF_Net, CPF_ZeroConstructor, CPF_IsPlainOldData)
+	unsigned char                                      UnknownData03[0x6];                                       // 0x03CA(0x0006) MISSED OFFSET
+	class AController*                                 LastHitBy;                                                // 0x03D0(0x0008) (CPF_ZeroConstructor, CPF_Transient, CPF_IsPlainOldData)
+	class AController*                                 Controller;                                               // 0x03D8(0x0008) (CPF_Net, CPF_ZeroConstructor, CPF_IsPlainOldData)
+	unsigned char                                      UnknownData04[0x8];                                       // 0x03E0(0x0008) MISSED OFFSET
+	class Vector3D                                     ControlInputVector;                                       // 0x03E8(0x000C) (CPF_ZeroConstructor, CPF_Transient, CPF_IsPlainOldData)
+	class Vector3D                                     LastControlInputVector;                                   // 0x03F4(0x000C) (CPF_ZeroConstructor, CPF_Transient, CPF_IsPlainOldData)
+};
+
+// ScriptStruct Engine.RootMotionMovementParams
+// 0x0040
+struct FRootMotionMovementParams
+{
+	bool                                               bHasRootMotion;                                           // 0x0000(0x0001) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	unsigned char                                      UnknownData00[0x3];                                       // 0x0001(0x0003) MISSED OFFSET
+	float                                              BlendWeight;                                              // 0x0004(0x0004) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	unsigned char                                      UnknownData01[0x8];                                       // 0x0008(0x0008) MISSED OFFSET
+	struct FTransform                                  RootMotionTransform;                                      // 0x0010(0x0030) (CPF_IsPlainOldData)
+};
+
+// ScriptStruct Engine.RepRootMotionMontage
+// 0x0160
+struct FRepRootMotionMontage
+{
+	bool                                               bIsActive;                                                // 0x0000(0x0001) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	unsigned char                                      UnknownData00[0x7];                                       // 0x0001(0x0007) MISSED OFFSET
+	class UAnimMontage*                                AnimMontage;                                              // 0x0008(0x0008) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	float                                              Position;                                                 // 0x0010(0x0004) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	struct FVector_NetQuantize100                      Location;                                                 // 0x0014(0x000C)
+	class Rotator                                      Rotation;                                                 // 0x0020(0x000C) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	unsigned char                                      UnknownData01[0x4];                                       // 0x002C(0x0004) MISSED OFFSET
+	class UPrimitiveComponent*                         MovementBase;                                             // 0x0030(0x0008) (CPF_ExportObject, CPF_ZeroConstructor, CPF_InstancedReference, CPF_IsPlainOldData)
+	struct FName                                       MovementBaseBoneName;                                     // 0x0038(0x0008) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	bool                                               bRelativePosition;                                        // 0x0040(0x0001) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	bool                                               bRelativeRotation;                                        // 0x0041(0x0001) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	unsigned char                                      UnknownData02[0x6];                                       // 0x0042(0x0006) MISSED OFFSET
+	struct FRootMotionSourceGroup                      AuthoritativeRootMotion;                                  // 0x0048(0x0100)
+	struct FVector_NetQuantize10                       Acceleration;                                             // 0x0148(0x000C)
+	struct FVector_NetQuantize10                       LinearVelocity;                                           // 0x0154(0x000C)
+};
+
+// Class Engine.Character
+// 0x03C0 (0x07C0 - 0x0400)
+class ACharacter : public APawn
+{
+public:
+	class USkeletalMeshComponent*                      Mesh;                                                     // 0x0400(0x0008) (CPF_Edit, CPF_BlueprintVisible, CPF_ExportObject, CPF_BlueprintReadOnly, CPF_ZeroConstructor, CPF_EditConst, CPF_InstancedReference, CPF_IsPlainOldData)
+	class UCharacterMovementComponent*                 CharacterMovement;                                        // 0x0408(0x0008) (CPF_Edit, CPF_BlueprintVisible, CPF_ExportObject, CPF_BlueprintReadOnly, CPF_ZeroConstructor, CPF_EditConst, CPF_InstancedReference, CPF_IsPlainOldData)
+	class UCapsuleComponent*                           CapsuleComponent;                                         // 0x0410(0x0008) (CPF_Edit, CPF_BlueprintVisible, CPF_ExportObject, CPF_BlueprintReadOnly, CPF_ZeroConstructor, CPF_EditConst, CPF_InstancedReference, CPF_IsPlainOldData)
+	class UCapsuleComponent*                           ProneCapsuleComponent;                                    // 0x0418(0x0008) (CPF_Edit, CPF_BlueprintVisible, CPF_ExportObject, CPF_BlueprintReadOnly, CPF_ZeroConstructor, CPF_EditConst, CPF_InstancedReference, CPF_IsPlainOldData)
+	struct FBasedMovementInfo                          BasedMovement;                                            // 0x0420(0x0030)
+	struct FBasedMovementInfo                          ReplicatedBasedMovement;                                  // 0x0450(0x0030) (CPF_Net)
+	float                                              AnimRootMotionTranslationScale;                           // 0x0480(0x0004) (CPF_Net, CPF_ZeroConstructor, CPF_IsPlainOldData)
+	class Vector3D                                     BaseTranslationOffset;                                    // 0x0484(0x000C) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	struct FQuat                                       BaseRotationOffset;                                       // 0x0490(0x0010) (CPF_IsPlainOldData)
+	float                                              ReplicatedServerLastTransformUpdateTimeStamp;             // 0x04A0(0x0004) (CPF_Net, CPF_ZeroConstructor, CPF_IsPlainOldData)
+	unsigned char                                      ReplicatedMovementMode;                                   // 0x04A4(0x0001) (CPF_Net, CPF_ZeroConstructor, CPF_IsPlainOldData)
+	bool                                               bInBaseReplication;                                       // 0x04A5(0x0001) (CPF_ZeroConstructor, CPF_IsPlainOldData)
+	unsigned char                                      UnknownData00[0x2];                                       // 0x04A6(0x0002) MISSED OFFSET
+	float                                              CrouchedEyeHeight;                                        // 0x04A8(0x0004) (CPF_Edit, CPF_BlueprintVisible, CPF_ZeroConstructor, CPF_IsPlainOldData)
+	unsigned char                                      bIsCrouched : 1;                                          // 0x04AC(0x0001) (CPF_BlueprintVisible, CPF_BlueprintReadOnly, CPF_Net)
+	unsigned char                                      bReplayHasRootMotionSources : 1;                          // 0x04AC(0x0001) (CPF_Net)
+	unsigned char                                      bPressedJump : 1;                                         // 0x04AC(0x0001) (CPF_BlueprintVisible, CPF_BlueprintReadOnly)
+	unsigned char                                      bClientUpdating : 1;                                      // 0x04AC(0x0001) (CPF_Transient)
+	unsigned char                                      bClientWasFalling : 1;                                    // 0x04AC(0x0001) (CPF_Transient)
+	unsigned char                                      bClientResimulateRootMotion : 1;                          // 0x04AC(0x0001) (CPF_Transient)
+	unsigned char                                      bClientResimulateRootMotionSources : 1;                   // 0x04AC(0x0001) (CPF_Transient)
+	unsigned char                                      bSimGravityDisabled : 1;                                  // 0x04AC(0x0001)
+	unsigned char                                      bClientCheckEncroachmentOnNetUpdate : 1;                  // 0x04AD(0x0001) (CPF_Transient)
+	unsigned char                                      bServerMoveIgnoreRootMotion : 1;                          // 0x04AD(0x0001) (CPF_Transient)
+	unsigned char                                      UnknownData01[0x2];                                       // 0x04AE(0x0002) MISSED OFFSET
+	float                                              JumpKeyHoldTime;                                          // 0x04B0(0x0004) (CPF_Edit, CPF_BlueprintVisible, CPF_BlueprintReadOnly, CPF_ZeroConstructor, CPF_DisableEditOnTemplate, CPF_Transient, CPF_EditConst, CPF_IsPlainOldData)
+	float                                              JumpMaxHoldTime;                                          // 0x04B4(0x0004) (CPF_Edit, CPF_BlueprintVisible, CPF_Net, CPF_ZeroConstructor, CPF_IsPlainOldData)
+	int                                                JumpMaxCount;                                             // 0x04B8(0x0004) (CPF_Edit, CPF_BlueprintVisible, CPF_Net, CPF_ZeroConstructor, CPF_IsPlainOldData)
+	int                                                JumpCurrentCount;                                         // 0x04BC(0x0004) (CPF_Edit, CPF_BlueprintVisible, CPF_BlueprintReadOnly, CPF_ZeroConstructor, CPF_DisableEditOnTemplate, CPF_EditConst, CPF_IsPlainOldData)
+	unsigned char                                      UnknownData02 : 1;                                        // 0x04C0(0x0001)
+	unsigned char                                      bWasJumping : 1;                                          // 0x04C0(0x0001) (CPF_Edit, CPF_BlueprintVisible, CPF_BlueprintReadOnly, CPF_DisableEditOnTemplate, CPF_Transient, CPF_EditConst)
+	unsigned char                                      UnknownData03[0x7];                                       // 0x04C1(0x0007) MISSED OFFSET
+	struct FScriptMulticastDelegate                    OnReachedJumpApex;                                        // 0x04C8(0x0010) (CPF_ZeroConstructor, CPF_InstancedReference, CPF_BlueprintAssignable)
+	unsigned char                                      UnknownData04[0x20];                                      // 0x04D8(0x0020) MISSED OFFSET
+	struct FScriptMulticastDelegate                    OnCharacterMovementUpdated;                               // 0x04F8(0x0010) (CPF_ZeroConstructor, CPF_InstancedReference, CPF_BlueprintAssignable)
+	struct FRootMotionSourceGroup                      SavedRootMotion;                                          // 0x0508(0x0100) (CPF_Transient)
+	unsigned char                                      UnknownData05[0x8];                                       // 0x0608(0x0008) MISSED OFFSET
+	struct FRootMotionMovementParams                   ClientRootMotionParams;                                   // 0x0610(0x0040) (CPF_Transient)
+	TArray<struct FSimulatedRootMotionReplicatedMove>  RootMotionRepMoves;                                       // 0x0650(0x0010) (CPF_ZeroConstructor, CPF_Transient)
+	struct FRepRootMotionMontage                       RepRootMotion;                                            // 0x0660(0x0160) (CPF_Net)
+};

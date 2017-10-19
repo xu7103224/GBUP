@@ -2,6 +2,7 @@
 #include "Process.h"
 #include "PUBG_Engine_classes.h"
 #include "Offsets.h"
+#include "Overlay.h"
 #include <exception>
 #include <future>
 #include <atomic>
@@ -55,17 +56,17 @@ namespace PUBG
 		DWORD				GetEntitiesCount();
 		Vector3D			GetActorPos(DWORD_PTR pactor);
 		std::string			GetActorNameById(int ID);
-		BOOL				EnumActor(_EnumActorCallback cb, void *parameter);	//当cb返回true时终止遍历，否则遍历所有actor之后返回false
-		void				EnumPlayComponent();//测试用
+		void				EnumAllObj();	
 		FTransform			GetBoneIndex(DWORD_PTR mesh, int index);
 		Vector3D			GetBoneWithRotation(DWORD_PTR mesh, int id);
-		FCameraCacheEntry	GetCameraCache();
+		FCameraCacheEntry	GetCameraCache();	//获取摄像头
 		Vector3D			WorldToScreen(Vector3D & WorldLocation, FCameraCacheEntry & CameraCacheL);
-		std::vector<D3DXLine> &GetLine(DWORD_PTR mesh, std::vector<D3DXLine>& vl);//获取一组骨架线
-		void				printPlayLine();
-		void				UpdatePlayersSkeleton();				//更新所有玩家的骨骼
-		void				CopyPlayersSkeleton(std::vector<D3DXLine> &v);
-		//测试用
+		//void				UpdatePlayersSkeleton();										//更新所有玩家的骨骼
+		std::vector<D3DXLine> &GetSkeletons(DWORD_PTR mesh, std::vector<D3DXLine>& vl);			//获取一组骨架线
+
+		void				OnPlayer(ACharacter &player);//所有关于玩家的操作在这里
+		void				OnVehicle(DWORD_PTR vehicleaddr, VehicleType type);//所有关于载具的操作在这里
+
 		
 
 
@@ -84,19 +85,23 @@ namespace PUBG
 		ULocalPlayer  LocalPlayer;
 		ActorList     AllActors;
 
-		VOID         CacheNames();
-		BOOL       IsPlayerActor(AActor* ptr);
-		ULevel     GetPersistentLevel();
-		VehicleType  IsVehicleActor(AActor* ptr);
-		AActor     GetActorbyIndex(DWORD i, ULevel& ulevel);
-		DWORD_PTR  GetActorPtrbyIndex(DWORD i, ULevel& ulevel);
-
+		BOOL			EnumActor(_EnumActorCallback cb, void *parameter);	//当cb返回true时终止遍历，否则遍历所有actor之后返回false
+		VOID			CacheNames();
+		BOOL			IsPlayerActor(AActor* ptr);
+		BOOL			IsPlayerActor(AActor &actor);
+		ULevel			GetPersistentLevel();
+		VehicleType		IsVehicleActor(AActor* ptr);
+		VehicleType		IsVehicleActor(AActor &actor);
+		AActor			GetActorbyIndex(DWORD i, ULevel& ulevel);
+		DWORD_PTR		GetActorPtrbyIndex(DWORD i, ULevel& ulevel);
 
 		std::unordered_set<AActor*> GetPlayerList();
 
 		//所有玩家骨骼线
 		std::vector<D3DXLine>		PlayersSkeleton;
-		std::mutex					PlayersSkeletonLock;
+
+		//可探测玩家数量
+		int PlayerCounts;
 		
 	private:
 		pubgCon();

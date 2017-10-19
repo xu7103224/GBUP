@@ -53,11 +53,10 @@ namespace PUBG
 		pubgCon *pc = pubgCon::instance();
 		*cameracache = pc->GetCameraCache();
 
-		RECT rc;
 		HWND hWnd = FindWindowW(L"UnrealWindow", 0);
-		GetWindowRect(hWnd, &rc);
-		screenWidth = rc.right - rc.left;
-		screenHeight = rc.bottom - rc.top;
+		GetWindowRect(hWnd, &screenrc);
+		screenWidth = screenrc.right - screenrc.left;
+		screenHeight = screenrc.bottom - screenrc.top;
 	}
 
 }

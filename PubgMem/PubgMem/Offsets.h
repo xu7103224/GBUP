@@ -34,6 +34,7 @@ namespace PUBG
 		FCameraCacheEntry *cameracache;
 		int screenWidth;
 		int screenHeight;
+		RECT screenrc;
 	};
 
 	extern COffsets offsets;
