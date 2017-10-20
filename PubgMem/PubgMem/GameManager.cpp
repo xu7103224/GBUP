@@ -13,7 +13,8 @@ namespace PUBG
 	pubgCon::pubgCon() 
 		: status(STATUS_SUCCESS)
 		, BaseAddress(0),
-		PlayerCounts(0)
+		PlayerCounts(0),
+		PlayersSkeletonSize(0)
 	{
 		my_atomic.store(FALSE);
 
@@ -29,6 +30,7 @@ namespace PUBG
 			AllActors.Vehicles.push_back(std::vector<DWORD_PTR>()); // BUGGY
 			AllActors.Vehicles.push_back(std::vector<DWORD_PTR>()); // BOAT
 		}
+		PlayersSkeleton.resize(SKELETON_MAX);
 	}
 
 	pubgCon::~pubgCon()
@@ -170,8 +172,8 @@ namespace PUBG
 				continue;
 			}
 			///遍历Item 类别，比较费时间
-			{
-				for (auto str : Item_1)
+			
+			/*	for (auto str : Item_1)
 					if (str == name) {
 						item_1_ID.push_back(i);
 						goto EXIT_1;
@@ -196,8 +198,8 @@ namespace PUBG
 						item_5_ID.push_back(i);
 						goto EXIT_1;
 					}
-			EXIT_1: continue;
-			}
+			EXIT_1: continue;*/
+			
 		}
 		return VOID();
 	}
@@ -485,7 +487,8 @@ namespace PUBG
 				dLine.t1.y = p1.y;
 				dLine.t2.x = c1.x;
 				dLine.t2.y = c1.y;
-				vl.push_back(dLine);
+				vl[PlayersSkeletonSize] = dLine;
+				++PlayersSkeletonSize;
 				previous = current;
 			}
 		}
@@ -581,7 +584,7 @@ namespace PUBG
 			//update window data
 			//
 			Overlay *wnd = Overlay::instance();
-			wnd->updateSkeletons(PlayersSkeleton);
+			wnd->updateSkeletons(PlayersSkeleton, PlayersSkeletonSize);
 #ifdef _DEBUG
 			static int loopcount = 0;
 			++loopcount;
@@ -593,11 +596,11 @@ namespace PUBG
 			//
 			//clear
 			//
-			PlayersSkeleton.clear();
+			
 			ItemListD.clear();
 			PlayerCounts = 0;
-
-			Sleep(1);
+			PlayersSkeletonSize = 0;//骨骼线清零
+			Sleep(0);
 			++count;
 		} while (true);
 	}

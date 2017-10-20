@@ -35,14 +35,15 @@ namespace PUBG
 		void DrawString(int x, int y, DWORD color, LPD3DXFONT g_pFont, const char * fmt, ...);
 		void InitWindow();
 		void initD3D(HWND hWnd);
+		BOOL ForwardMessage(HWND _hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 		inline HWND hWnd() { return _hWnd; };
 		inline void hWnd(HWND hwd) { _hWnd = hwd; };
 		
 
 		//
-		void updateSkeletons(std::vector<D3DXLine> &skeletons);
-		void CopySkeletons(std::vector<D3DXLine> &skeletons);
+		void updateSkeletons(std::vector<D3DXLine> &skeletons, size_t size);
+		void CopySkeletons();
 
 	private:
 		Overlay();
@@ -62,8 +63,13 @@ namespace PUBG
 		LPD3DXFONT pFont;
 		MARGINS  margin;
 		//所有玩家骨骼线
-		std::vector<D3DXLine>		Skeletons;
+		std::vector<D3DXLine>		SynSkeletons;		//要同步的
+		size_t						SynSkeletonsSize;	//
+		std::vector<D3DXLine>		SkeletonsRender;
+		size_t						SkeletonsRenderSize;	//
 		std::mutex					SkeletonsLock;
+
+
 
 	};
 

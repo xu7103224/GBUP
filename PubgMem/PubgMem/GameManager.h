@@ -13,6 +13,7 @@
 #include <windows.h>
 
 
+#define SKELETON_MAX (100*30)
 typedef BOOL ( __stdcall *_EnumActorCallback)(AActor &actor, DWORD_PTR actoraddr, void *parameter);
 
 namespace PUBG
@@ -103,7 +104,7 @@ namespace PUBG
 
 		//所有玩家骨骼线
 		std::vector<D3DXLine>		PlayersSkeleton;
-
+		size_t						PlayersSkeletonSize;
 		//可探测物品点
 		std::vector<DroppedItemKey> ItemListD;
 

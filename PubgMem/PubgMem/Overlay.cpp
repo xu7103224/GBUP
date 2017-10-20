@@ -5,6 +5,7 @@
 #include <cstdarg>
 #include <iostream>
 #include <Dwmapi.h>
+#include <Windows.h>
 #include "PUBG_Engine_classes.h"
 #include "PUBG_Engine_structs.h"
 
@@ -22,8 +23,12 @@ namespace PUBG
 		d3ddev(NULL),
 		pFont(NULL),
 		margin({ 0,0,s_width,s_height }),
-		hThd(NULL)
+		hThd(NULL),
+		SynSkeletonsSize(0),
+		SkeletonsRenderSize(0)
 	{
+		SynSkeletons.resize(SKELETON_MAX);
+		SkeletonsRender.resize(SKELETON_MAX);
 	}
 
 
@@ -77,6 +82,73 @@ namespace PUBG
 		D3DXCreateLine(d3ddev, &d3dLine);
 	}
 
+	BOOL Overlay::ForwardMessage(HWND _hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		bool bForward = false;
+		switch (message) {
+			case WM_KEYDOWN://处理键盘上某一键按下的消息
+			case WM_KEYUP://处理键盘上某一按下键被释放的消息
+			case WM_CHAR://处理击键过程中产生的非系统键的可见字符消息
+			case WM_DEADCHAR://处理击键过程中产生的非系统键"死字符"消息
+			case WM_SYSKEYDOWN://处理系统键按下的消息
+			case WM_SYSKEYUP://处理系统键抬起的消息
+			case WM_SYSCHAR://处理系统键可见字符消息
+			case WM_SYSDEADCHAR://处理系统键"死字符"消息
+			case WM_VKEYTOITEM:
+			case WM_UNICHAR:
+			case WM_SETHOTKEY:
+			case WM_GETHOTKEY:
+			case WM_HOTKEY:
+			case WM_CHARTOITEM:
+				//鼠标
+//#define WM_NCPOINTERUPDATE              0x0241
+//#define WM_NCPOINTERDOWN                0x0242
+//#define WM_NCPOINTERUP                  0x0243
+//#define DM_POINTERHITTEST               0x0250
+			case WM_DROPFILES:
+			case WM_LBUTTONDBLCLK:
+			case WM_LBUTTONUP:
+			case WM_LBUTTONDOWN:
+			case WM_MBUTTONDBLCLK:
+			case WM_MBUTTONDOWN:
+			case WM_MBUTTONUP:
+			case WM_XBUTTONDBLCLK:
+			case WM_XBUTTONDOWN:
+			case WM_XBUTTONUP:
+			case WM_MOUSEWHEEL:
+			case WM_MOUSEMOVE:
+			case WM_RBUTTONDBLCLK:
+			case WM_RBUTTONDOWN:
+			case WM_RBUTTONUP:
+			//case WM_MOUSEFIRST:
+			case WM_MOUSEACTIVATE:
+			case WM_MOUSEHOVER:
+			case WM_MOUSELEAVE:
+			case WM_PARENTNOTIFY:
+			case WM_POINTERACTIVATE:
+			case WM_POINTERCAPTURECHANGED:
+			case WM_POINTERDEVICECHANGE:
+			case WM_POINTERDEVICEINRANGE:
+			case WM_POINTERDEVICEOUTOFRANGE:
+			case WM_POINTERDOWN:
+			case WM_POINTERENTER:
+			case WM_POINTERHWHEEL:
+			case WM_POINTERLEAVE:
+			case WM_POINTERUP:
+			case WM_POINTERUPDATE:
+			case WM_POINTERWHEEL:
+			case WM_SETCURSOR:
+			case WM_TOUCHHITTESTING:
+				bForward = true;
+				break;
+		}
+
+		if (bForward) {
+			PostMessage(twnd, message, wParam, lParam);
+		}
+		return FALSE;
+	}
+
 	void Overlay::DrawString(int x, int y, DWORD color, LPD3DXFONT g_pFont, const char *fmt, ...)
 	{
 		char buf[1024] = { 0 };
@@ -117,10 +189,9 @@ namespace PUBG
 	}
 
 	void Overlay::RenderPlayersSkeleton() {
-		std::vector<D3DXLine> skeletons;
-		CopySkeletons(skeletons);
-		for (auto line : skeletons) {
-			DrawLine(line.t1.x, line.t1.y, line.t2.x, line.t2.y, D3DCOLOR_ARGB(255, 153, 249, 9));
+		CopySkeletons();
+		for (int i = 0; i < SkeletonsRenderSize;++i) {
+			DrawLine(SkeletonsRender[i].t1.x, SkeletonsRender[i].t1.y, SkeletonsRender[i].t2.x, SkeletonsRender[i].t2.y, D3DCOLOR_ARGB(255, 153, 249, 9));
 		}
 	}
 
@@ -140,19 +211,20 @@ namespace PUBG
 		d3ddev->Present(NULL, NULL, NULL, NULL);   // displays the created frame on the screen
 	}
 
-	void Overlay::updateSkeletons(std::vector<D3DXLine>& skeletons)
+	void Overlay::updateSkeletons(std::vector<D3DXLine>& skeletons, size_t size)
 	{
 		std::lock_guard<std::mutex> l(SkeletonsLock);
-		Skeletons.clear();
-		for (auto it : skeletons)
-			Skeletons.push_back(it);
+		for (int i = 0; i < size; ++i) 
+			SynSkeletons[i] = skeletons[i];
+		SynSkeletonsSize = size;
 	}
 
-	void Overlay::CopySkeletons(std::vector<D3DXLine>& skeletons)
+	void Overlay::CopySkeletons()
 	{
 		std::lock_guard<std::mutex> l(SkeletonsLock);
-		for (auto it : Skeletons) 
-			skeletons.push_back(it);
+		for (int i = 0; i < SynSkeletonsSize; ++i) 
+			SkeletonsRender[i] = SynSkeletons[i];
+		SkeletonsRenderSize = SynSkeletonsSize;
 	}
 
 	DWORD Overlay::ThreadProc(LPVOID lpThreadParameter)
@@ -183,12 +255,25 @@ namespace PUBG
 			}
 			ZeroMemory(&rc, sizeof(RECT));
 			GetWindowRect(_this->twnd, &rc);
+			//GetWindowPos()
 			_this->s_width = rc.right - rc.left;
 			_this->s_height = rc.bottom - rc.top;
 
-			//SetWindowPos(_this->_hWnd, HWND_TOPMOST, rc.left, rc.top, _this->s_width, _this->s_height, SWP_NOMOVE);
-			MoveWindow(_this->_hWnd, rc.left, rc.top, _this->s_width, _this->s_height, true);
+			//MoveWindow(_this->_hWnd, rc.left, rc.top, _this->s_width, _this->s_height, true);
 			//SetParent(_this->_hWnd, _this->twnd);
+			HWND top = GetForegroundWindow();
+			if (top == _this->twnd){
+				ShowWindow(_this->_hWnd, SW_SHOW);
+				SetWindowPos(_this->_hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_SHOWWINDOW/*SWP_NOSIZE*/);
+				MoveWindow(_this->_hWnd, rc.left, rc.top, _this->s_width, _this->s_height, true);
+				//PostMessage(_this->_hWnd, WM_PAINT, 0, 0);
+				//SetWindowPos(_this->_hWnd, HWND_TOPMOST, rc.left, rc.top, _this->s_width, _this->s_height, SWP_NOSIZE);
+			}
+			else{
+				ShowWindow(_this->_hWnd, SW_HIDE);
+				//SetWindowPos(_this->_hWnd, HWND_TOPMOST, rc.left, rc.top, _this->s_width, _this->s_height, SWP_NOSIZE);
+				//SetWindowPos(_this->hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE);
+			}
 
 			//render your esp
 			_this->Render();
@@ -200,27 +285,36 @@ namespace PUBG
 
 	LRESULT CALLBACK Overlay::WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-//#ifdef _DEBUG
-//		char szbuff[MAX_PATH];
-//		sprintf_s(szbuff, "msg: %x\n hWnd = %x", message, hWnd);
-//		OutputDebugStringA(szbuff);
-//#endif
+		//#ifdef _DEBUG
+		//		char szbuff[MAX_PATH];
+		//		sprintf_s(szbuff, "msg: %x\n hWnd = %x", message, hWnd);
+		//		OutputDebugStringA(szbuff);
+		//#endif
+		//if (Overlay::instance()->ForwardMessage(hWnd, message, wParam, lParam)) {
+		//	return 0;
+		//}
+		bool bForward = true;
 		switch (message)
 		{
 		case WM_PAINT:
 			//std::cout << "WM_PAINT" << std::endl;
 			Overlay::instance()->Render();
+			bForward = false;
 			break;
 
 		case WM_CREATE:
 			DwmExtendFrameIntoClientArea(hWnd, &Overlay::instance()->margin);
+			bForward = false;
 			break;
 
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			return 0;
 		}
-		
+
+	/*	if (bForward) {
+			PostMessage(Overlay::instance()->twnd, message, wParam, lParam);
+		}*/
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 
