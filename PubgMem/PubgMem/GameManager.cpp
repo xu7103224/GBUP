@@ -132,32 +132,42 @@ namespace PUBG
 	VOID pubgCon::CacheNames()
 	{
 		std::string name = "";
+		std::unordered_set<std::string> hashmap_i1(Item_1.begin(), Item_1.end());
+		std::unordered_set<std::string> hashmap_i2(Item_2.begin(), Item_2.end());
+		std::unordered_set<std::string> hashmap_i3(Item_3.begin(), Item_3.end());
+		std::unordered_set<std::string> hashmap_i4(Item_4.begin(), Item_4.end());
+		std::unordered_set<std::string> hashmap_i5(Item_5.begin(), Item_5.end());
+
+		std::unordered_set<std::string> hashmap_player(playerNames.begin(), playerNames.end());
+		std::unordered_set<std::string> hashmap_uaz(uazNames.begin(), uazNames.end());
+		std::unordered_set<std::string> hashmap_dacia(daciaNames.begin(), daciaNames.end());
+		std::unordered_set<std::string> hashmap_bike(bikeNames.begin(), bikeNames.end());
+		std::unordered_set<std::string> hashmap_buggy(buggyNames.begin(), buggyNames.end());
+		std::unordered_set<std::string> hashmap_Item(ItemName_.begin(), ItemName_.end());
+
 		int item1(0), item2(0), item3(0), item4(0), item5(0);
 		for (int i(0), c1(0), c2(0), c3(0), c4(0), c5(0), c6(0); i < 100000; i++)
 		{
 			name = GetActorNameById(i);
-			if (name == playerNames.at(0).c_str() || name == playerNames.at(1).c_str() || name == playerNames.at(2).c_str() || name == playerNames.at(3).c_str())
-			{
-				ActorIds[c1++] = i;
+
+			if (c1 < 4 && hashmap_player.find(name) != hashmap_player.end()) {
+				motorbike[c1++] = i;
 				continue;
 			}
-			if (name == uazNames.at(0).c_str() || name == uazNames.at(1).c_str() || name == uazNames.at(2).c_str())
-			{
-				uaz[c2++] = i;
+			if (c2 < 3 && hashmap_uaz.find(name) != hashmap_uaz.end()) {
+				motorbike[c2++] = i;
 				continue;
 			}
-			if (name == daciaNames.at(0).c_str() || name == daciaNames.at(1).c_str() || name == daciaNames.at(2).c_str() || name == daciaNames.at(3).c_str())
-			{
-				dacia[c3++] = i;
+			if (c3 < 4 && hashmap_dacia.find(name) != hashmap_dacia.end()) {
+				motorbike[c3++] = i;
 				continue;
 			}
-			if (name == bikeNames.at(0).c_str() || name == bikeNames.at(1).c_str() || name == bikeNames.at(2).c_str() || name == bikeNames.at(3).c_str() || name == bikeNames.at(4).c_str())
-			{
+
+			if (c4 < 5 && hashmap_bike.find(name) != hashmap_bike.end()) {
 				motorbike[c4++] = i;
 				continue;
 			}
-			if (name == buggyNames.at(0).c_str() || name == buggyNames.at(1).c_str() || name == buggyNames.at(2).c_str())
-			{
+			if (c5 < 3 && hashmap_buggy.find(name) != hashmap_buggy.end()) {
 				buggy[c5++] = i;
 				continue;
 			}
@@ -166,40 +176,48 @@ namespace PUBG
 				boat = i;
 				continue;
 			}
-			if (name == ItemName_[0] || name == ItemName_[1])
-			{
+			if (c6 < 2 && hashmap_Item.find(name) != hashmap_Item.end()) {
 				itemtype[c6++] = i;
 				continue;
 			}
+
+			if (item1 < 58 && hashmap_i1.find(name) != hashmap_i1.end()) {
+				std::cout << name << " " << i << std::endl;
+				item_1_ID.insert(i);
+				item1++;
+				continue;
+
+			}
+			if (item2 < 22 && hashmap_i2.find(name) != hashmap_i2.end()) {
+				std::cout << name << " " << i << std::endl;
+				item_2_ID.insert(i);
+				item2++;
+				continue;
+			}
+			if (item3 < 36 && hashmap_i3.find(name) != hashmap_i3.end()) {
+				std::cout << name << " " << i << std::endl;
+				item_3_ID.insert(i);
+				item3++;
+				continue;
+			}
+			if (item4 < 6 && hashmap_i4.find(name) != hashmap_i4.end()) {
+				std::cout << name << " " << i << std::endl;
+				item_4_ID.insert(i);
+				item4++;
+				continue;
+			}
+			if (item5 < 6 && hashmap_i5.find(name) != hashmap_i5.end()) {
+				std::cout << name << " " << i << std::endl;
+				item_5_ID.insert(i);
+				item5++;
+				continue;
+			}
+
+			if (c1 == 4 && c2 == 3 && c3 == 4 && c4 == 5 && c5 == 3 && boat != 0 && c6 == 2
+				&& item1 == 57 && item2 == 21 && item3 == 35 && item4 == 5 && item5 == 5)
+				return;
 			///遍历Item 类别，比较费时间
-			
-			/*	for (auto str : Item_1)
-					if (str == name) {
-						item_1_ID.push_back(i);
-						goto EXIT_1;
-					}
-				for (auto str : Item_2)
-					if (str == name) {
-						item_2_ID.push_back(i);
-						goto EXIT_1;
-					}
-				for (auto str : Item_3)
-					if (str == name) {
-						item_3_ID.push_back(i);
-						goto EXIT_1;
-					}
-				for (auto str : Item_4)
-					if (str == name) {
-						item_4_ID.push_back(i);
-						goto EXIT_1;
-					}
-				for (auto str : Item_5)
-					if (str == name) {
-						item_5_ID.push_back(i);
-						goto EXIT_1;
-					}
-			EXIT_1: continue;*/
-			
+
 		}
 		return VOID();
 	}

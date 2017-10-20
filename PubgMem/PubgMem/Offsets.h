@@ -47,11 +47,11 @@ namespace PUBG
 	extern int buggy[3];
 	extern int boat;
 	extern int itemtype[2];
-	extern std::vector<int>  item_1_ID;
-	extern std::vector<int>  item_2_ID;
-	extern std::vector<int>  item_3_ID;
-	extern std::vector<int>  item_4_ID;
-	extern std::vector<int>  item_5_ID;
+	extern std::unordered_set<int>  item_1_ID;
+	extern std::unordered_set<int>  item_2_ID;
+	extern std::unordered_set<int>  item_3_ID;
+	extern std::unordered_set<int>  item_4_ID;
+	extern std::unordered_set<int>  item_5_ID;
 
 	extern std::vector<std::string> playerNames;
 	extern std::vector<std::string> uazNames;
