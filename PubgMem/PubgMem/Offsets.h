@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <windows.h>
+#include <unordered_set>
 #include <vector>
 #include <list>
 #define TARGETPROC  L"tslgame.exe"

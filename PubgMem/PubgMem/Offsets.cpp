@@ -11,11 +11,11 @@ namespace PUBG
 	int buggy[3];
 	int boat = 0;
 	int itemtype[2];
-	std::vector<int>  item_1_ID;
-	std::vector<int>  item_2_ID;
-	std::vector<int>  item_3_ID;
-	std::vector<int>  item_4_ID;
-	std::vector<int>  item_5_ID;
+	std::unordered_set<int>  item_1_ID;
+	std::unordered_set<int>  item_2_ID;
+	std::unordered_set<int>  item_3_ID;
+	std::unordered_set<int>  item_4_ID;
+	std::unordered_set<int>  item_5_ID;
 
 	std::vector<std::string> playerNames = { "PlayerFemale_A", "PlayerFemale_A_C", "PlayerMale_A", "PlayerMale_A_C" };
 	std::vector<std::string> uazNames = { "Uaz_A_01_C", "Uaz_B_01_C", "Uaz_C_01_C" };
@@ -58,7 +58,7 @@ namespace PUBG
 	void CGlobalObjs::update()
 	{
 
-		HWND hWnd = FindWindowW(L"UnrealWindow", 0);
+		HWND hWnd = FindWindow(GAMEWINDOW, 0);
 		GetWindowRect(hWnd, &screenrc);
 		screenWidth = screenrc.right - screenrc.left;
 		screenHeight = screenrc.bottom - screenrc.top;

@@ -13,13 +13,21 @@ namespace PUBG
 		D3DXVECTOR2 t2;
 	};
 
-	struct DroppedItemKey
+	struct DroppedItemInfo
 	{
-		DWORD   index;
-		uint8_t Category;
-		FLOAT x;
-		FLOAT y;
-		FLOAT z;
+		DWORD       index;
+		uint8_t     Category;
+		D3DXVECTOR2 vec;
+
+		DroppedItemInfo(int i = NULL) {
+			index = 0;
+			Category = 0;
+		}
+		DroppedItemInfo(DroppedItemInfo& cop) {
+			index = cop.index;
+			Category = cop.Category;
+			vec = cop.vec;
+		}
 	};
 
 
@@ -31,7 +39,8 @@ namespace PUBG
 		BOOL SetupWindow();
 		void DrawLine(float x, float y, float xx, float yy, D3DCOLOR color);
 		void DrawBox(float x, float y, float width, float height, D3DCOLOR color);
-		void RenderPlayersSkeleton();
+		void RenderPlayersSkeleton();  ///»­¹Ç÷À
+		void RenderDrawItem();  ///»­ÎïÆ·
 		void DrawString(int x, int y, DWORD color, LPD3DXFONT g_pFont, const char * fmt, ...);
 		void InitWindow();
 		void initD3D(HWND hWnd);

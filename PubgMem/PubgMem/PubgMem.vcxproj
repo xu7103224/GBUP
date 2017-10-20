@@ -19,12 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cfifo.h" />
     <ClInclude Include="FMath.h" />
     <ClInclude Include="CallResult.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="DynImport.h" />
     <ClInclude Include="FunctionTypes.h" />
     <ClInclude Include="ItemNameDetials.h" />
+    <ClInclude Include="kfifo.h" />
     <ClInclude Include="Macro.h" />
     <ClInclude Include="NativeEnums.h" />
     <ClInclude Include="NativeStructures.h" />
@@ -55,6 +57,7 @@
   <ItemGroup>
     <ClCompile Include="FMath.cpp" />
     <ClCompile Include="GameManager.cpp" />
+    <ClCompile Include="kfifo.cpp" />
     <ClCompile Include="NativeSubsystem.cpp" />
     <ClCompile Include="Offsets.cpp" />
     <ClCompile Include="Overlay.cpp" />

@@ -29,6 +29,9 @@
     <Filter Include="Misc\math">
       <UniqueIdentifier>{6581adcc-d068-4a2e-adc9-80a6ed6e9191}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Misc\FIFO">
+      <UniqueIdentifier>{64d26695-1f90-4049-9d5e-812ed37d5260}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -127,6 +130,12 @@
     <ClInclude Include="ItemNameDetials.h">
       <Filter>GameCheat</Filter>
     </ClInclude>
+    <ClInclude Include="cfifo.h">
+      <Filter>Misc\FIFO</Filter>
+    </ClInclude>
+    <ClInclude Include="kfifo.h">
+      <Filter>Misc\FIFO</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NativeSubsystem.cpp">
@@ -174,6 +183,9 @@
     </ClCompile>
     <ClCompile Include="Overlay.cpp">
       <Filter>window</Filter>
+    </ClCompile>
+    <ClCompile Include="kfifo.cpp">
+      <Filter>Misc\FIFO</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

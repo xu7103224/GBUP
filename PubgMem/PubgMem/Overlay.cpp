@@ -195,6 +195,15 @@ namespace PUBG
 		}
 	}
 
+	///画物品
+	void Overlay::RenderDrawItem()
+	{
+		DroppedItemInfo ItemInfo(zf_ItemQueue.get());
+		if (ItemInfo.index != 0)
+			DrawString(ItemInfo.vec.x, ItemInfo.vec.y, D3DCOLOR_ARGB(255, 255, 144, 0), pFont, "ItemId = %d", ItemInfo.index);
+		
+	}
+
 	void Overlay::Render()
 	{
 		// clear the window alpha
@@ -205,6 +214,8 @@ namespace PUBG
 								 //calculate and and draw esp stuff
 		//ESP
 		RenderPlayersSkeleton();	//画骨骼
+
+		RenderDrawItem(); ///画物品
 
 		d3ddev->EndScene();    // ends the 3D scene
 
@@ -246,7 +257,7 @@ namespace PUBG
 			if (msg.message == WM_QUIT)
 				exit(0);
 			_this->twnd = NULL;
-			_this->twnd = FindWindow(_T("UnrealWindow"), 0);
+			_this->twnd = FindWindow(GAMEWINDOW, 0);
 			if (!_this->twnd)
 			{
 				std::cout << "shutting" << std::endl;
@@ -327,7 +338,7 @@ namespace PUBG
 
 
 		while (!twnd)
-			twnd = FindWindow(_T("UnrealWindow"), 0);
+			twnd = FindWindow(GAMEWINDOW, 0);
 		if (twnd != NULL)
 		{
 			GetWindowRect(twnd, &rc);

@@ -4,9 +4,11 @@
 #include "FMath.h"
 #include "PUBG_Engine_classes.h"
 #include "PUBG_Engine_structs.h"
-#define GAMEWINDOW "UnrealWindow"
+
+
 namespace PUBG
 {
+	zFifo<DroppedItemInfo> zf_ItemQueue;
 	HANDLE TragetHandle{ 0 };
 	pubgCon* pubgCon::m_instance = NULL;
 
@@ -151,15 +153,16 @@ namespace PUBG
 			name = GetActorNameById(i);
 
 			if (c1 < 4 && hashmap_player.find(name) != hashmap_player.end()) {
-				motorbike[c1++] = i;
+				std::cout << name << " " << i << std::endl;
+				ActorIds[c1++] = i;
 				continue;
 			}
 			if (c2 < 3 && hashmap_uaz.find(name) != hashmap_uaz.end()) {
-				motorbike[c2++] = i;
+				uaz[c2++] = i;
 				continue;
 			}
 			if (c3 < 4 && hashmap_dacia.find(name) != hashmap_dacia.end()) {
-				motorbike[c3++] = i;
+				dacia[c3++] = i;
 				continue;
 			}
 
@@ -182,32 +185,32 @@ namespace PUBG
 			}
 
 			if (item1 < 58 && hashmap_i1.find(name) != hashmap_i1.end()) {
-				std::cout << name << " " << i << std::endl;
+				//std::cout << name << " " << i << std::endl;
 				item_1_ID.insert(i);
 				item1++;
 				continue;
 
 			}
 			if (item2 < 22 && hashmap_i2.find(name) != hashmap_i2.end()) {
-				std::cout << name << " " << i << std::endl;
+				//std::cout << name << " " << i << std::endl;
 				item_2_ID.insert(i);
 				item2++;
 				continue;
 			}
 			if (item3 < 36 && hashmap_i3.find(name) != hashmap_i3.end()) {
-				std::cout << name << " " << i << std::endl;
+				//std::cout << name << " " << i << std::endl;
 				item_3_ID.insert(i);
 				item3++;
 				continue;
 			}
 			if (item4 < 6 && hashmap_i4.find(name) != hashmap_i4.end()) {
-				std::cout << name << " " << i << std::endl;
+				//std::cout << name << " " << i << std::endl;
 				item_4_ID.insert(i);
 				item4++;
 				continue;
 			}
 			if (item5 < 6 && hashmap_i5.find(name) != hashmap_i5.end()) {
-				std::cout << name << " " << i << std::endl;
+				//std::cout << name << " " << i << std::endl;
 				item_5_ID.insert(i);
 				item5++;
 				continue;
@@ -294,7 +297,7 @@ namespace PUBG
 
 			//处理物品生成点
 			if (_this->IsDroppedItemGroup(actor)) {
-				//_this->OnItem(addr);
+				_this->OnItem(addr);
 			}
 			return FALSE;
 		}, param);
@@ -376,6 +379,29 @@ namespace PUBG
 		DWORD_PTR Addres{ 0 };
 		proc.memory().Read<DWORD_PTR>(reinterpret_cast<DWORD_PTR>(ulevel.AActors.Data) + i * 8, Addres);
 		return Addres;
+	}
+
+	DroppedItemInfo pubgCon::GetDroppedItemInfomation(DWORD_PTR Ptr, DWORD i)
+	{
+		DroppedItemInfo temp(NULL);
+		wchar_t entityname[64] = { NULL };
+		Vector3D worldvec;
+		DWORD_PTR pADroppedItemGroup(0);
+		DWORD_PTR pUItem(0);
+		DWORD_PTR pUItemFString(0);
+		DWORD_PTR pItemName(0);
+
+		proc.memory().Read<DWORD_PTR>(Ptr + i * 0x10, pADroppedItemGroup);
+		proc.memory().Read<Vector3D>(pADroppedItemGroup + 0x1E0, worldvec);
+		proc.memory().Read<DWORD_PTR>(pADroppedItemGroup + 0x448, pUItem);
+		proc.memory().Read<uint8_t>(pUItem + 0x170, temp.Category);
+		//proc.memory().Read<DWORD_PTR>(pUItem + 0x40, pUItemFString);
+		proc.memory().Read<DWORD>(pUItem + 0x18, temp.index);
+		auto w3d =  WorldToScreen(worldvec, *g_global.cameracache);
+		temp.vec.x = w3d.x;
+		temp.vec.y = w3d.y;
+		return temp;
+
 	}
 
 	std::unordered_set<AActor*> pubgCon::GetPlayerList()
@@ -524,31 +550,12 @@ namespace PUBG
 	void pubgCon::OnItem(DWORD_PTR actorPtr)
 	{
 		DWORD_PTR DroppedItemGroupArray(0);
-		
+
 		int count(0);
 		proc.memory().Read<DWORD_PTR>(actorPtr + 0x2D8, DroppedItemGroupArray);
 		proc.memory().Read<int>(actorPtr + 0x2E0, count);
-		for (int i(0); i < count; i++) {
-			wchar_t entityname[64] = { NULL };
-			Vector3D  relative;
-			DWORD_PTR pADroppedItemGroup(0);
-			DWORD_PTR pUItem(0);
-			DWORD_PTR pUItemFString(0);
-			DWORD_PTR pItemName(0);
-			DWORD     ItemId(0);
-			uint8_t     Category(0);
-
-			proc.memory().Read<DWORD_PTR>(DroppedItemGroupArray + i * 0x10, pADroppedItemGroup);
-			proc.memory().Read<Vector3D>(pADroppedItemGroup + 0x1E0, relative);
-			proc.memory().Read<DWORD_PTR>(pADroppedItemGroup + 0x448, pUItem);
-			proc.memory().Read<uint8_t>(pUItem + 0x170, Category);
-			proc.memory().Read<DWORD_PTR>(pUItem + 0x40, pUItemFString);
-			proc.memory().Read<DWORD>(pUItem + 0x18, ItemId);
-
-			proc.memory().Read<DWORD_PTR>(pUItemFString + 0x28, pItemName);
-			ItemListD.push_back({ ItemId , Category , relative.x, relative.y, relative.z });
-		
-		}
+		for (int i(0); i < count; i++)
+			zf_ItemQueue.push( GetDroppedItemInfomation(DroppedItemGroupArray, i));
 		
 		
 	}
@@ -617,8 +624,6 @@ namespace PUBG
 			//
 			//clear
 			//
-			
-			ItemListD.clear();
 			PlayerCounts = 0;
 			PlayersSkeletonSize = 0;//骨骼线清零
 			Sleep(0);

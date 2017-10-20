@@ -1,6 +1,7 @@
 #pragma once
 #include "Process.h"
 #include "PUBG_Engine_classes.h"
+#include "cfifo.h"
 #include "Offsets.h"
 #include "Overlay.h"
 #include <exception>
@@ -12,6 +13,11 @@
 #include <list>
 #include <windows.h>
 
+//#ifdef _DEBUG
+//#define GAMEWINDOW "PUBGWindow"
+//#else
+#define GAMEWINDOW "UnrealWindow"
+//#endif // _DEBUG
 
 #define SKELETON_MAX (100*30)
 typedef BOOL ( __stdcall *_EnumActorCallback)(AActor &actor, DWORD_PTR actoraddr, void *parameter);
@@ -99,14 +105,14 @@ namespace PUBG
 		VehicleType		IsVehicleActor(AActor &actor);
 		AActor			GetActorbyIndex(DWORD i, ULevel& ulevel);
 		DWORD_PTR		GetActorPtrbyIndex(DWORD i, ULevel& ulevel);
+		DroppedItemInfo GetDroppedItemInfomation(DWORD_PTR Ptr, DWORD i);
 
 		std::unordered_set<AActor*> GetPlayerList();
 
 		//所有玩家骨骼线
 		std::vector<D3DXLine>		PlayersSkeleton;
 		size_t						PlayersSkeletonSize;
-		//可探测物品点
-		std::vector<DroppedItemKey> ItemListD;
+		
 
 		//可探测玩家数量
 		int PlayerCounts;
@@ -116,4 +122,6 @@ namespace PUBG
 		static pubgCon* m_instance;
 
 	};
+
+	extern zFifo<DroppedItemInfo> zf_ItemQueue;
 }
