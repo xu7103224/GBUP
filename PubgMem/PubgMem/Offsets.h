@@ -30,6 +30,7 @@ namespace PUBG
 		CGlobalObjs();
 		~CGlobalObjs();
 		void update();
+		void updateCameraCache();
 
 		FCameraCacheEntry *cameracache;
 		int screenWidth;

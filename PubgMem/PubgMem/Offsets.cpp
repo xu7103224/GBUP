@@ -57,13 +57,17 @@ namespace PUBG
 
 	void CGlobalObjs::update()
 	{
-		pubgCon *pc = pubgCon::instance();
-		*cameracache = pc->GetCameraCache();
 
 		HWND hWnd = FindWindowW(L"UnrealWindow", 0);
 		GetWindowRect(hWnd, &screenrc);
 		screenWidth = screenrc.right - screenrc.left;
 		screenHeight = screenrc.bottom - screenrc.top;
+	}
+
+	void CGlobalObjs::updateCameraCache()
+	{
+		pubgCon *pc = pubgCon::instance();
+		pc->GetCameraCache(*cameracache);
 	}
 
 #include "ItemNameDetials.h"

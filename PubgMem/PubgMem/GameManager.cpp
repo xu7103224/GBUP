@@ -404,9 +404,8 @@ namespace PUBG
 		return &AllActors;
 	}
 
-	FCameraCacheEntry pubgCon::GetCameraCache()
+	FCameraCacheEntry &pubgCon::GetCameraCache(FCameraCacheEntry& cce)
 	{
-		FCameraCacheEntry cce;
 		DWORD_PTR lp = offsets.pLocalPlayer;
 		DWORD_PTR temp;
 		proc.memory().Read<DWORD_PTR>(lp + FIELD_OFFSET(ULocalPlayer,PlayerController)/*0x30*/, temp);
@@ -562,6 +561,7 @@ namespace PUBG
 
 	VOID pubgCon::MainLoop()
 	{
+		static int loopcount = 0;
 		Overlay::instance()->SetupWindow();
 
 		while (!my_atomic.load())
@@ -569,7 +569,6 @@ namespace PUBG
 			InitObj();
 			Sleep(500);
 		}
-		int count = 0;
 		std::cout << "init success!" << std::endl;
 
 		do
@@ -577,6 +576,10 @@ namespace PUBG
 			//
 			//update
 			//
+
+			if ((loopcount % 2000) == 0) {
+				g_global.updateCameraCache();
+			}
 			g_global.update();
 			EnumAllObj();
 			
@@ -601,7 +604,7 @@ namespace PUBG
 			PlayerCounts = 0;
 			PlayersSkeletonSize = 0;//¹Ç÷ÀÏßÇåÁã
 			Sleep(0);
-			++count;
+			++loopcount;
 		} while (true);
 	}
 }

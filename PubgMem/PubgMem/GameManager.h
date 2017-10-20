@@ -62,7 +62,7 @@ namespace PUBG
 		void				EnumAllObj();	
 		FTransform			GetBoneIndex(DWORD_PTR mesh, int index);
 		Vector3D			GetBoneWithRotation(DWORD_PTR mesh, int id);
-		FCameraCacheEntry	GetCameraCache();	//获取摄像头
+		FCameraCacheEntry	&GetCameraCache(FCameraCacheEntry &);	//获取摄像头
 		Vector3D			WorldToScreen(Vector3D & WorldLocation, FCameraCacheEntry & CameraCacheL);
 		//void				UpdatePlayersSkeleton();										    //更新所有玩家的骨骼
 		std::vector<D3DXLine> &GetSkeletons(DWORD_PTR mesh, std::vector<D3DXLine>& vl);			//获取一组骨架线
