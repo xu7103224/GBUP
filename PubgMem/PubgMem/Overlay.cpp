@@ -25,10 +25,15 @@ namespace PUBG
 		margin({ 0,0,s_width,s_height }),
 		hThd(NULL),
 		SynSkeletonsSize(0),
-		SkeletonsRenderSize(0)
+		SkeletonsRenderSize(0),
+		SynItemsSize(0),
+		ItemsRanderSize(0)
 	{
 		SynSkeletons.resize(SKELETON_MAX);
 		SkeletonsRender.resize(SKELETON_MAX);
+
+		SynItems.resize(ITEM_MAX);
+		ItemsRander.resize(ITEM_MAX);
 	}
 
 
@@ -198,10 +203,15 @@ namespace PUBG
 	///ª≠ŒÔ∆∑
 	void Overlay::RenderDrawItem()
 	{
-		DroppedItemInfo ItemInfo(zf_ItemQueue.get());
-		if (ItemInfo.index != 0)
-			DrawString(ItemInfo.vec.x, ItemInfo.vec.y, D3DCOLOR_ARGB(255, 255, 144, 0), pFont, "ItemId = %d", ItemInfo.index);
-		
+		//DroppedItemInfo ItemInfo(zf_ItemQueue.get());
+		//if (ItemInfo.index != 0)
+		//	DrawString(ItemInfo.vec.x, ItemInfo.vec.y, D3DCOLOR_ARGB(255, 255, 144, 0), pFont, "ItemId = %d", ItemInfo.index);
+
+		CopyItems();
+		for (int i = 0; i < ItemsRanderSize; ++i) {
+			DrawString(ItemsRander[i].vec.x, ItemsRander[i].vec.y, D3DCOLOR_ARGB(255, 255, 144, 0), pFont, "ItemId = %d", ItemsRander[i].index);
+		}
+
 	}
 
 	void Overlay::Render()
@@ -236,6 +246,24 @@ namespace PUBG
 		for (int i = 0; i < SynSkeletonsSize; ++i) 
 			SkeletonsRender[i] = SynSkeletons[i];
 		SkeletonsRenderSize = SynSkeletonsSize;
+	}
+
+	void Overlay::updateItems(std::vector<DroppedItemInfo> &items, size_t size)
+	{
+		std::lock_guard<std::mutex> l(ItemsLock);
+		for (int i = 0; i < size; ++i)
+			SynItems[i] = items[i];
+		SynItemsSize = size;
+
+	}
+
+	void Overlay::CopyItems()
+	{
+		std::lock_guard<std::mutex> l(ItemsLock);
+		for (int i = 0; i < SynItemsSize; ++i)
+			ItemsRander[i] = SynItems[i];
+		ItemsRanderSize = SynItemsSize;
+
 	}
 
 	DWORD Overlay::ThreadProc(LPVOID lpThreadParameter)

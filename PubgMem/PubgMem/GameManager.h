@@ -20,6 +20,7 @@
 //#endif // _DEBUG
 
 #define SKELETON_MAX (100*30)
+#define ITEM_MAX (10000)
 typedef BOOL ( __stdcall *_EnumActorCallback)(AActor &actor, DWORD_PTR actoraddr, void *parameter);
 
 namespace PUBG
@@ -64,6 +65,7 @@ namespace PUBG
 		DWORD				GetPlayerCount();
 		DWORD				GetEntitiesCount();
 		Vector3D			GetActorPos(DWORD_PTR pactor);
+		Vector3D			GetActorPos(AActor & pactor);
 		std::string			GetActorNameById(int ID);
 		void				EnumAllObj();	
 		FTransform			GetBoneIndex(DWORD_PTR mesh, int index);
@@ -75,7 +77,7 @@ namespace PUBG
 
 		void				OnPlayer(ACharacter &player);                      //所有关于玩家的操作在这里
 		void				OnVehicle(DWORD_PTR vehicleaddr, VehicleType type);//所有关于载具的操作在这里
-		void                OnItem(DWORD_PTR actorPtr);                        //所有物品生成点的操作在这里
+		void                OnItem(AActor& actor, DWORD_PTR actorPtr);                        //所有物品生成点的操作在这里
 		
 
 
@@ -105,7 +107,11 @@ namespace PUBG
 		VehicleType		IsVehicleActor(AActor &actor);
 		AActor			GetActorbyIndex(DWORD i, ULevel& ulevel);
 		DWORD_PTR		GetActorPtrbyIndex(DWORD i, ULevel& ulevel);
-		DroppedItemInfo GetDroppedItemInfomation(DWORD_PTR Ptr, DWORD i);
+		DroppedItemInfo GetDroppedItemInfomation(DWORD_PTR Ptr, AActor &actor, DWORD_PTR pactor, DWORD i);
+		INLINE BOOL		GameIn() { return PlayerCounts > 0; };
+		INLINE void		GameInit(BOOL b) { bGameInit = b; };
+		INLINE BOOL		GameInit() { return bGameInit; };
+
 
 		std::unordered_set<AActor*> GetPlayerList();
 
@@ -113,13 +119,18 @@ namespace PUBG
 		std::vector<D3DXLine>		PlayersSkeleton;
 		size_t						PlayersSkeletonSize;
 		
+		//所有item
+		std::vector<DroppedItemInfo> Items;
+		size_t						 ItemsSize;
 
 		//可探测玩家数量
 		int PlayerCounts;
 		
 	private:
 		pubgCon();
-		static pubgCon* m_instance;
+		static pubgCon*				m_instance;
+
+		BOOL						bGameInit;
 
 	};
 

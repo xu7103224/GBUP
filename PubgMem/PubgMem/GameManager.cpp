@@ -16,7 +16,9 @@ namespace PUBG
 		: status(STATUS_SUCCESS)
 		, BaseAddress(0),
 		PlayerCounts(0),
-		PlayersSkeletonSize(0)
+		PlayersSkeletonSize(0),
+		ItemsSize(0),
+		bGameInit(false)
 	{
 		my_atomic.store(FALSE);
 
@@ -33,6 +35,7 @@ namespace PUBG
 			AllActors.Vehicles.push_back(std::vector<DWORD_PTR>()); // BOAT
 		}
 		PlayersSkeleton.resize(SKELETON_MAX);
+		Items.resize(ITEM_MAX);
 	}
 
 	pubgCon::~pubgCon()
@@ -234,6 +237,13 @@ namespace PUBG
 		return pos;
 	}
 
+	Vector3D pubgCon::GetActorPos(AActor &pactor)
+	{
+		Vector3D pos;
+		proc.memory().Read<Vector3D>((DWORD_PTR)pactor.RootComponent + FIELD_OFFSET(USceneComponent, UnknownData04)/*0x174*/, pos);
+		return pos;
+	}
+
 	ULevel pubgCon::GetPersistentLevel()
 	{
 		UGameViewportClient ViewportClient;
@@ -261,6 +271,7 @@ namespace PUBG
 	BOOL pubgCon::EnumActor(_EnumActorCallback cb, void *parameter)
 	{
 		ULevel ulevel = GetPersistentLevel();
+
 		for (int i(0); i < ulevel.AActors.Count; i++) {
 			DWORD_PTR Addres;
 			AActor Actor;
@@ -284,9 +295,9 @@ namespace PUBG
 			std::string name = _this->GetActorNameById(actor.Name.ComparisonIndex);
 			//处理玩家数据
 			if (_this->IsPlayerActor(actor)) {
-				ACharacter player;
-				_this->proc.memory().Read<ACharacter>(addr, player);
-				_this->OnPlayer(player);
+					ACharacter player;
+					_this->proc.memory().Read<ACharacter>(addr, player);
+					_this->OnPlayer(player);
 			}
 
 			//处理载具数据
@@ -297,7 +308,7 @@ namespace PUBG
 
 			//处理物品生成点
 			if (_this->IsDroppedItemGroup(actor)) {
-				_this->OnItem(addr);
+				_this->OnItem(actor, addr);
 			}
 			return FALSE;
 		}, param);
@@ -381,7 +392,7 @@ namespace PUBG
 		return Addres;
 	}
 
-	DroppedItemInfo pubgCon::GetDroppedItemInfomation(DWORD_PTR Ptr, DWORD i)
+	DroppedItemInfo pubgCon::GetDroppedItemInfomation(DWORD_PTR Ptr, AActor &actor, DWORD_PTR pactor, DWORD i)
 	{
 		DroppedItemInfo temp(NULL);
 		wchar_t entityname[64] = { NULL };
@@ -397,12 +408,40 @@ namespace PUBG
 		proc.memory().Read<uint8_t>(pUItem + 0x170, temp.Category);
 		//proc.memory().Read<DWORD_PTR>(pUItem + 0x40, pUItemFString);
 		proc.memory().Read<DWORD>(pUItem + 0x18, temp.index);
-		auto w3d =  WorldToScreen(worldvec, *g_global.cameracache);
+		auto w3d = WorldToScreen(GetActorPos(actor) + worldvec, *g_global.cameracache);
 		temp.vec.x = w3d.x;
 		temp.vec.y = w3d.y;
 		return temp;
 
 	}
+
+
+	//DroppedItemInfo pubgCon::GetDroppedItemInfomation(DWORD_PTR Ptr, AActor &actor, DWORD_PTR pactor, DWORD i)
+	//{
+	//	DroppedItemInfo temp(NULL);
+	//	wchar_t entityname[64] = { NULL };
+	//	Vector3D worldvec;
+	//	DWORD_PTR pADroppedItemGroup(0);
+	//	DWORD_PTR pUItem(0);
+	//	DWORD_PTR pUItemFString(0);
+	//	DWORD_PTR pItemName(0);
+
+	//	proc.memory().Read<DWORD_PTR>(Ptr + i * 0x10, pADroppedItemGroup);
+	//	proc.memory().Read<Vector3D>(pADroppedItemGroup + 0x1E0, worldvec);
+
+	//	proc.memory().Read<DWORD_PTR>(pADroppedItemGroup + 0x448, pUItem);//UDroppedItemInteractionComponent.UItem
+	//	proc.memory().Read<DWORD_PTR>(pUItem + 0x40, pUItemFString);
+	//	proc.memory().Read<DWORD_PTR>(pUItemFString + 0x28, pItemName);
+
+
+	//	proc.memory().Read<uint8_t>(pUItem + 0x170, temp.Category);
+	//	proc.memory().Read<DWORD>(pUItem + 0x18, temp.index);
+	//	Vector3D w3d = WorldToScreen(GetActorPos(actor) + worldvec, *g_global.cameracache);
+	//	temp.vec.x = w3d.x;
+	//	temp.vec.y = w3d.y;
+	//	return temp;
+
+	//}
 
 	std::unordered_set<AActor*> pubgCon::GetPlayerList()
 	{
@@ -547,17 +586,21 @@ namespace PUBG
 		++PlayerCounts;
 	}
 
-	void pubgCon::OnItem(DWORD_PTR actorPtr)
+	void pubgCon::OnItem(AActor& actor, DWORD_PTR actorPtr)
 	{
 		DWORD_PTR DroppedItemGroupArray(0);
 
 		int count(0);
-		proc.memory().Read<DWORD_PTR>(actorPtr + 0x2D8, DroppedItemGroupArray);
+		proc.memory().Read<DWORD_PTR>(actorPtr + 0x2D8, DroppedItemGroupArray);//UnknownData14
 		proc.memory().Read<int>(actorPtr + 0x2E0, count);
-		for (int i(0); i < count; i++)
-			zf_ItemQueue.push( GetDroppedItemInfomation(DroppedItemGroupArray, i));
-		
-		
+		for (int i(0); i < count; i++) {
+			//zf_ItemQueue.push(GetDroppedItemInfomation(DroppedItemGroupArray, actor, actorPtr, i));
+			DroppedItemInfo dii = GetDroppedItemInfomation(DroppedItemGroupArray, actor, actorPtr, i);
+			if (dii.index != 0) {
+				Items[ItemsSize] = dii;
+				++ItemsSize;
+			}
+		}
 	}
 
 	void pubgCon::OnVehicle(DWORD_PTR vehicleaddr, VehicleType type)
@@ -598,21 +641,17 @@ namespace PUBG
 
 		do
 		{
-			//
-			//update
-			//
-
-			if ((loopcount % 2000) == 0) {
-				g_global.updateCameraCache();
-			}
-			g_global.update();
 			EnumAllObj();
+			g_global.updateCameraCache();
 			
 			//
 			//update window data
 			//
 			Overlay *wnd = Overlay::instance();
 			wnd->updateSkeletons(PlayersSkeleton, PlayersSkeletonSize);
+
+			wnd->updateItems(Items, ItemsSize);
+
 #ifdef _DEBUG
 			static int loopcount = 0;
 			++loopcount;
@@ -622,10 +661,26 @@ namespace PUBG
 #endif // _DEBUG
 
 			//
+			//update
+			//
+
+			if (GameIn()) {
+				if (!GameInit()) {
+					g_global.update();
+					RefreshOffsets();
+					GameInit(TRUE);
+				}
+			}
+			else {
+				GameInit(FALSE);
+			}
+
+			//
 			//clear
 			//
 			PlayerCounts = 0;
 			PlayersSkeletonSize = 0;//骨骼线清零
+			ItemsSize = 0;			//item清零
 			Sleep(0);
 			++loopcount;
 		} while (true);

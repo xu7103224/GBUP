@@ -50,9 +50,12 @@ namespace PUBG
 		inline void hWnd(HWND hwd) { _hWnd = hwd; };
 		
 
-		//
+		//¹Ç÷À
 		void updateSkeletons(std::vector<D3DXLine> &skeletons, size_t size);
 		void CopySkeletons();
+		//µôÂä
+		void updateItems(std::vector<DroppedItemInfo> &items, size_t size);
+		void CopyItems();
 
 	private:
 		Overlay();
@@ -77,6 +80,13 @@ namespace PUBG
 		std::vector<D3DXLine>		SkeletonsRender;
 		size_t						SkeletonsRenderSize;	//
 		std::mutex					SkeletonsLock;
+
+		//ËùÓÐitem
+		std::vector<DroppedItemInfo> SynItems;
+		size_t						 SynItemsSize;
+		std::vector<DroppedItemInfo> ItemsRander;
+		size_t						 ItemsRanderSize;
+		std::mutex					 ItemsLock;
 
 
 
