@@ -20,7 +20,7 @@
 //#endif // _DEBUG
 
 #define SKELETON_MAX (100*30)
-#define ITEM_MAX (10000)
+#define SYN_ITEM_MAX (10000)
 typedef BOOL ( __stdcall *_EnumActorCallback)(AActor &actor, DWORD_PTR actoraddr, void *parameter);
 
 namespace PUBG
@@ -120,8 +120,8 @@ namespace PUBG
 		size_t						PlayersSkeletonSize;
 		
 		//所有item
-		std::vector<DroppedItemInfo> Items;
-		size_t						 ItemsSize;
+		VITEM						Items;
+		size_t						ItemsSize;
 
 		//可探测玩家数量
 		int PlayerCounts;

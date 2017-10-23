@@ -7,6 +7,8 @@
 #include <mutex>
 #include <unordered_map>
 
+
+#define ITEM_MAX			200	//只迭代前200个
 namespace PUBG
 {
 	struct D3DXLine {
@@ -14,26 +16,37 @@ namespace PUBG
 		D3DXVECTOR2 t2;
 	};
 
+	template<typename T>
+	struct UPDATE_ITEM {
+		T data;
+		BOOL update;
+	};
+
 	struct DroppedItemInfo
 	{
-		DWORD_PTR		id;
+		DWORD_PTR	id;
 		DWORD       index;
 		uint8_t     Category;
 		D3DXVECTOR2 vec;
 		BOOL		alive;
 
-		DroppedItemInfo(int i = NULL) {
-			index = 0;
-			Category = 0;
+		DroppedItemInfo(int i = NULL):index(0),
+			Category(0), vec(0.0, 0.0), alive(false)
+		{
 		}
 		DroppedItemInfo(DroppedItemInfo& cop) {
+			id = cop.id;
 			index = cop.index;
 			Category = cop.Category;
 			vec = cop.vec;
+			alive = cop.alive;
 		}
 
 	};
 
+typedef std::vector<DroppedItemInfo>					VITEM;
+typedef UPDATE_ITEM<int>								REFTAB_ITEM;
+typedef std::unordered_map<DWORD_PTR, REFTAB_ITEM>		REFTAB;
 	class Overlay
 	{
 	public:
@@ -57,12 +70,11 @@ namespace PUBG
 		void updateSkeletons(std::vector<D3DXLine> &skeletons, size_t size);
 		void CopySkeletons();
 		//掉落
-		void updateItems(std::vector<DroppedItemInfo> &items, size_t size);
-		void CopyItems();
-		void updateItems(DroppedItemInfo &item, DWORD_PTR id);
-		int FindItem(DWORD_PTR id);
-		void FindItemDel(DWORD_PTR id);
-		void FindItemAdd(DWORD_PTR id, int index);
+		void updateItems(VITEM &items, int size);
+		int FindItemIndexTable(DWORD_PTR id);
+		void ItemIndexTableDel(DWORD_PTR id);
+		void ItemIndexTableAdd(DWORD_PTR id, REFTAB_ITEM &item);
+		void ItemIndexTableReset();
 	private:
 		Overlay();
 		static DWORD WINAPI ThreadProc(LPVOID lpThreadParameter);
@@ -88,12 +100,8 @@ namespace PUBG
 		std::mutex					SkeletonsLock;
 
 		//所有item
-		std::vector<DroppedItemInfo> SynItems;
-		size_t						 SynItemsSize;
-		std::vector<DroppedItemInfo> ItemsRander;
-		size_t						 ItemsRanderSize;
-		std::mutex					 ItemsLock;
-		std::unordered_map<DWORD_PTR, int> mapFindItem;
+		VITEM						SynItems;
+		REFTAB						ItemIndexTable;
 
 
 

@@ -24,16 +24,14 @@ namespace PUBG
 		pFont(NULL),
 		margin({ 0,0,s_width,s_height }),
 		hThd(NULL),
-		SynSkeletonsSize(0),
-		SkeletonsRenderSize(0),
-		SynItemsSize(0),
-		ItemsRanderSize(0)
+		SynSkeletonsSize(0)
 	{
 		SynSkeletons.resize(SKELETON_MAX);
-		SkeletonsRender.resize(SKELETON_MAX);
 
-		SynItems.resize(ITEM_MAX);
-		ItemsRander.resize(ITEM_MAX);
+		SynItems.resize(SYN_ITEM_MAX);
+		for (int i = 0; i < SYN_ITEM_MAX - 1; ++i)
+			SynItems[i];
+
 	}
 
 
@@ -203,24 +201,11 @@ namespace PUBG
 	///画物品
 	void Overlay::RenderDrawItem()
 	{
-		ItemsRanderSize = 0;
-		for(int i(0); ;i++)
-		{
-			ItemsRander[i] = zf_ItemQueue.get();
-			if (ItemsRander[i].index == 0)
-				break;
-
-			
+		/*CopyItems();*/
+		for (int i = 0; i < ITEM_MAX; ++i) {
+			if(SynItems[i].alive)
+				DrawString(SynItems[i].vec.x, SynItems[i].vec.y, D3DCOLOR_ARGB(255, 255, 144, 0), pFont, "ItemId = %d", SynItems[i].index);
 		}
-		DrawString(ItemInfo.vec.x, ItemInfo.vec.y, D3DCOLOR_ARGB(255, 255, 144, 0), pFont, "ItemId = %d", ItemInfo.index);
-		
-		/*if (ItemInfo.index != 0 && ItemInfo.Category != 0)
-			DrawString(ItemInfo.vec.x, ItemInfo.vec.y, D3DCOLOR_ARGB(255, 255, 144, 0), pFont, "ItemId = %d", ItemInfo.index);*/
-
-		/*CopyItems();
-		for (int i = 0; i < ItemsRanderSize; ++i) {
-			DrawString(ItemsRander[i].vec.x, ItemsRander[i].vec.y, D3DCOLOR_ARGB(255, 255, 144, 0), pFont, "ItemId = %d", ItemsRander[i].index);
-		}*/
 
 	}
 
@@ -258,60 +243,77 @@ namespace PUBG
 		SkeletonsRenderSize = SynSkeletonsSize;*/
 	}
 
-	void Overlay::updateItems(std::vector<DroppedItemInfo> &items, size_t size)
-	{
-		std::lock_guard<std::mutex> l(ItemsLock);
-		for (int i = 0; i < size; ++i)
-			SynItems[i] = items[i];
-		SynItemsSize = size;
-
-	}
-
-	void Overlay::CopyItems()
-	{
-		std::lock_guard<std::mutex> l(ItemsLock);
-		for (int i = 0; i < SynItemsSize; ++i)
-			ItemsRander[i] = SynItems[i];
-		ItemsRanderSize = SynItemsSize;
-
-	}
-
-	void Overlay::updateItems(DroppedItemInfo & item, DWORD_PTR id)
+	void Overlay::updateItems(VITEM & items, int size)
 	{
 		int index;
-		if ((index = FindItem(id)) == -1) {
-			item.alive = true;
-			for (int i = 0; ; ++i) {
-				if (!SynItems[i].alive){
-					SynItems[i] = item;
-					FindItemAdd(id, i);
-				}
+		REFTAB_ITEM rti;
+
+		//清理
+		for (int i = 0; i < size - 1; ++i) {
+			items[i].alive = true;
+			int index;
+			int id = items[i].id;
+			if ((index = FindItemIndexTable(id)) != -1) {
+				ItemIndexTable[index].update = true;
 			}
 		}
-		else {
-			item.alive = false;
 
+		for (REFTAB::iterator iter = ItemIndexTable.begin();
+			iter != ItemIndexTable.end(); ++iter) {
+			if (false == iter->second.update){
+				SynItems[iter->second.data].alive = false;
+				iter = ItemIndexTable.erase(iter);
+			}
 		}
+	
+
+		//更新
+		for (int i = 0; i < size - 1; ++i) {
+			items[i].alive = true;
+			int index;
+			int id = items[i].id;
+			if ((index = FindItemIndexTable(id)) == -1) {
+				for (int i = 0; ; ++i) {
+					if (!SynItems[i].alive) {
+						index = i;
+						break;
+					}
+				}
+			}
+
+			SynItems[index] = items[i];
+			rti.data = index;
+			rti.update = true;
+			ItemIndexTableAdd(id, rti);
+		}
+
+
 	}
 
-	int Overlay::FindItem(DWORD_PTR id)
+	int Overlay::FindItemIndexTable(DWORD_PTR id)
 	{
-		auto it = mapFindItem.find(id);
-		if (mapFindItem.end != it)
-			return it->second;
+		auto it = ItemIndexTable.find(id);
+		if (ItemIndexTable.end() != it)
+			return it->second.data;
 		return -1;
 	}
 
-	void Overlay::FindItemDel(DWORD_PTR id)
+	void Overlay::ItemIndexTableDel(DWORD_PTR id)
 	{
-		auto it = mapFindItem.find(id);
-		if (mapFindItem.end != it)
-			mapFindItem.erase(it);
+		auto it = ItemIndexTable.find(id);
+		if (ItemIndexTable.end() != it)
+			ItemIndexTable.erase(it);
 	}
 
-	void Overlay::FindItemAdd(DWORD_PTR id, int index)
+	void Overlay::ItemIndexTableAdd(DWORD_PTR id, REFTAB_ITEM &item)
 	{
-		mapFindItem[id] = index;
+		ItemIndexTable[id] = item;
+	}
+
+	void Overlay::ItemIndexTableReset()
+	{
+		for (auto it : ItemIndexTable)
+			it.second.update = false;
 	}
 
 	DWORD Overlay::ThreadProc(LPVOID lpThreadParameter)
@@ -371,14 +373,6 @@ namespace PUBG
 
 	LRESULT CALLBACK Overlay::WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		//#ifdef _DEBUG
-		//		char szbuff[MAX_PATH];
-		//		sprintf_s(szbuff, "msg: %x\n hWnd = %x", message, hWnd);
-		//		OutputDebugStringA(szbuff);
-		//#endif
-		//if (Overlay::instance()->ForwardMessage(hWnd, message, wParam, lParam)) {
-		//	return 0;
-		//}
 		bool bForward = true;
 		switch (message)
 		{
@@ -398,9 +392,6 @@ namespace PUBG
 			return 0;
 		}
 
-	/*	if (bForward) {
-			PostMessage(Overlay::instance()->twnd, message, wParam, lParam);
-		}*/
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 
@@ -424,10 +415,6 @@ namespace PUBG
 		}
 		else
 		{
-			//cout << "Closing..." << GetLastError() << endl;
-			//Sleep(3000);
-			//Shutdown();
-			//ExitProcess(0);
 		}
 		WNDCLASSEX wc;
 

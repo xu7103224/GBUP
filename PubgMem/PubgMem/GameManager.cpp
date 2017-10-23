@@ -596,14 +596,11 @@ namespace PUBG
 		proc.memory().Read<int>(actorPtr + 0x2E0, count);
 		DroppedItemInfo dii;
 		for (int i(0); i < count; i++) {
-			dii = GetDroppedItemInfomation(DroppedItemGroupArray, actor, actorPtr, i);
-			if (dii.index != 0)
-				zf_ItemQueue.push(dii);
-			/*DroppedItemInfo dii = GetDroppedItemInfomation(DroppedItemGroupArray, actor, actorPtr, i);
+			DroppedItemInfo dii = GetDroppedItemInfomation(DroppedItemGroupArray, actor, actorPtr, i);
 			if (dii.index != 0) {
 				Items[ItemsSize] = dii;
 				++ItemsSize;
-			}*/
+			}
 		}
 	}
 
@@ -654,9 +651,9 @@ namespace PUBG
 			//
 			Overlay *wnd = Overlay::instance();
 			wnd->updateSkeletons(PlayersSkeleton, PlayersSkeletonSize);
-
 			wnd->updateItems(Items, ItemsSize);
-			zf_ItemQueue.push(spInfo);
+			//wnd->updateItems(Items, ItemsSize);
+			//zf_ItemQueue.push(spInfo);
 #ifdef _DEBUG
 			static int loopcount = 0;
 			++loopcount;
@@ -683,6 +680,7 @@ namespace PUBG
 			//
 			//clear
 			//
+			wnd->ItemIndexTableReset();//清空更新hash表
 			PlayerCounts = 0;
 			PlayersSkeletonSize = 0;//骨骼线清零
 			ItemsSize = 0;			//item清零

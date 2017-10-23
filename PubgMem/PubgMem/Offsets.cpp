@@ -57,7 +57,6 @@ namespace PUBG
 
 	void CGlobalObjs::update()
 	{
-
 		HWND hWnd = FindWindow(GAMEWINDOW, 0);
 		GetWindowRect(hWnd, &screenrc);
 		screenWidth = screenrc.right - screenrc.left;
