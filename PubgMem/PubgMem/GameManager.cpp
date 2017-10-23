@@ -411,6 +411,7 @@ namespace PUBG
 		auto w3d = WorldToScreen(GetActorPos(actor) + worldvec, *g_global.cameracache);
 		temp.vec.x = w3d.x;
 		temp.vec.y = w3d.y;
+		temp.id = pUItem;
 		return temp;
 
 	}
@@ -580,7 +581,7 @@ namespace PUBG
 	void pubgCon::OnPlayer(ACharacter & player)
 	{
 		//获取骨架
-		GetSkeletons(reinterpret_cast<DWORD_PTR>(player.Mesh), PlayersSkeleton);
+		//GetSkeletons(reinterpret_cast<DWORD_PTR>(player.Mesh), PlayersSkeleton);
 
 		//玩家计数
 		++PlayerCounts;
@@ -593,13 +594,16 @@ namespace PUBG
 		int count(0);
 		proc.memory().Read<DWORD_PTR>(actorPtr + 0x2D8, DroppedItemGroupArray);//UnknownData14
 		proc.memory().Read<int>(actorPtr + 0x2E0, count);
+		DroppedItemInfo dii;
 		for (int i(0); i < count; i++) {
-			//zf_ItemQueue.push(GetDroppedItemInfomation(DroppedItemGroupArray, actor, actorPtr, i));
-			DroppedItemInfo dii = GetDroppedItemInfomation(DroppedItemGroupArray, actor, actorPtr, i);
+			dii = GetDroppedItemInfomation(DroppedItemGroupArray, actor, actorPtr, i);
+			if (dii.index != 0)
+				zf_ItemQueue.push(dii);
+			/*DroppedItemInfo dii = GetDroppedItemInfomation(DroppedItemGroupArray, actor, actorPtr, i);
 			if (dii.index != 0) {
 				Items[ItemsSize] = dii;
 				++ItemsSize;
-			}
+			}*/
 		}
 	}
 
@@ -629,6 +633,7 @@ namespace PUBG
 
 	VOID pubgCon::MainLoop()
 	{
+		DroppedItemInfo spInfo(NULL);
 		static int loopcount = 0;
 		Overlay::instance()->SetupWindow();
 
@@ -651,7 +656,7 @@ namespace PUBG
 			wnd->updateSkeletons(PlayersSkeleton, PlayersSkeletonSize);
 
 			wnd->updateItems(Items, ItemsSize);
-
+			zf_ItemQueue.push(spInfo);
 #ifdef _DEBUG
 			static int loopcount = 0;
 			++loopcount;
@@ -667,7 +672,7 @@ namespace PUBG
 			if (GameIn()) {
 				if (!GameInit()) {
 					g_global.update();
-					RefreshOffsets();
+					//RefreshOffsets();
 					GameInit(TRUE);
 				}
 			}

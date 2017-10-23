@@ -203,14 +203,24 @@ namespace PUBG
 	///ª≠ŒÔ∆∑
 	void Overlay::RenderDrawItem()
 	{
-		//DroppedItemInfo ItemInfo(zf_ItemQueue.get());
-		//if (ItemInfo.index != 0)
-		//	DrawString(ItemInfo.vec.x, ItemInfo.vec.y, D3DCOLOR_ARGB(255, 255, 144, 0), pFont, "ItemId = %d", ItemInfo.index);
+		ItemsRanderSize = 0;
+		for(int i(0); ;i++)
+		{
+			ItemsRander[i] = zf_ItemQueue.get();
+			if (ItemsRander[i].index == 0)
+				break;
 
-		CopyItems();
+			
+		}
+		DrawString(ItemInfo.vec.x, ItemInfo.vec.y, D3DCOLOR_ARGB(255, 255, 144, 0), pFont, "ItemId = %d", ItemInfo.index);
+		
+		/*if (ItemInfo.index != 0 && ItemInfo.Category != 0)
+			DrawString(ItemInfo.vec.x, ItemInfo.vec.y, D3DCOLOR_ARGB(255, 255, 144, 0), pFont, "ItemId = %d", ItemInfo.index);*/
+
+		/*CopyItems();
 		for (int i = 0; i < ItemsRanderSize; ++i) {
 			DrawString(ItemsRander[i].vec.x, ItemsRander[i].vec.y, D3DCOLOR_ARGB(255, 255, 144, 0), pFont, "ItemId = %d", ItemsRander[i].index);
-		}
+		}*/
 
 	}
 
@@ -223,7 +233,7 @@ namespace PUBG
 
 								 //calculate and and draw esp stuff
 		//ESP
-		RenderPlayersSkeleton();	//ª≠π«˜¿
+		//RenderPlayersSkeleton();	//ª≠π«˜¿
 
 		RenderDrawItem(); ///ª≠ŒÔ∆∑
 
@@ -234,18 +244,18 @@ namespace PUBG
 
 	void Overlay::updateSkeletons(std::vector<D3DXLine>& skeletons, size_t size)
 	{
-		std::lock_guard<std::mutex> l(SkeletonsLock);
+		/*std::lock_guard<std::mutex> l(SkeletonsLock);
 		for (int i = 0; i < size; ++i) 
 			SynSkeletons[i] = skeletons[i];
-		SynSkeletonsSize = size;
+		SynSkeletonsSize = size;*/
 	}
 
 	void Overlay::CopySkeletons()
 	{
-		std::lock_guard<std::mutex> l(SkeletonsLock);
+		/*std::lock_guard<std::mutex> l(SkeletonsLock);
 		for (int i = 0; i < SynSkeletonsSize; ++i) 
 			SkeletonsRender[i] = SynSkeletons[i];
-		SkeletonsRenderSize = SynSkeletonsSize;
+		SkeletonsRenderSize = SynSkeletonsSize;*/
 	}
 
 	void Overlay::updateItems(std::vector<DroppedItemInfo> &items, size_t size)
@@ -264,6 +274,44 @@ namespace PUBG
 			ItemsRander[i] = SynItems[i];
 		ItemsRanderSize = SynItemsSize;
 
+	}
+
+	void Overlay::updateItems(DroppedItemInfo & item, DWORD_PTR id)
+	{
+		int index;
+		if ((index = FindItem(id)) == -1) {
+			item.alive = true;
+			for (int i = 0; ; ++i) {
+				if (!SynItems[i].alive){
+					SynItems[i] = item;
+					FindItemAdd(id, i);
+				}
+			}
+		}
+		else {
+			item.alive = false;
+
+		}
+	}
+
+	int Overlay::FindItem(DWORD_PTR id)
+	{
+		auto it = mapFindItem.find(id);
+		if (mapFindItem.end != it)
+			return it->second;
+		return -1;
+	}
+
+	void Overlay::FindItemDel(DWORD_PTR id)
+	{
+		auto it = mapFindItem.find(id);
+		if (mapFindItem.end != it)
+			mapFindItem.erase(it);
+	}
+
+	void Overlay::FindItemAdd(DWORD_PTR id, int index)
+	{
+		mapFindItem[id] = index;
 	}
 
 	DWORD Overlay::ThreadProc(LPVOID lpThreadParameter)
@@ -317,7 +365,6 @@ namespace PUBG
 			//render your esp
 			_this->Render();
 
-			Sleep(5);
 		}
 		return msg.wParam;
 	}

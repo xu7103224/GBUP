@@ -5,6 +5,7 @@
 #include <D3dx9core.h>
 #include <vector>
 #include <mutex>
+#include <unordered_map>
 
 namespace PUBG
 {
@@ -15,9 +16,11 @@ namespace PUBG
 
 	struct DroppedItemInfo
 	{
+		DWORD_PTR		id;
 		DWORD       index;
 		uint8_t     Category;
 		D3DXVECTOR2 vec;
+		BOOL		alive;
 
 		DroppedItemInfo(int i = NULL) {
 			index = 0;
@@ -28,8 +31,8 @@ namespace PUBG
 			Category = cop.Category;
 			vec = cop.vec;
 		}
-	};
 
+	};
 
 	class Overlay
 	{
@@ -56,7 +59,10 @@ namespace PUBG
 		//µôÂä
 		void updateItems(std::vector<DroppedItemInfo> &items, size_t size);
 		void CopyItems();
-
+		void updateItems(DroppedItemInfo &item, DWORD_PTR id);
+		int FindItem(DWORD_PTR id);
+		void FindItemDel(DWORD_PTR id);
+		void FindItemAdd(DWORD_PTR id, int index);
 	private:
 		Overlay();
 		static DWORD WINAPI ThreadProc(LPVOID lpThreadParameter);
@@ -87,6 +93,7 @@ namespace PUBG
 		std::vector<DroppedItemInfo> ItemsRander;
 		size_t						 ItemsRanderSize;
 		std::mutex					 ItemsLock;
+		std::unordered_map<DWORD_PTR, int> mapFindItem;
 
 
 
