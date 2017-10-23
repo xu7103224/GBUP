@@ -13,7 +13,6 @@
 namespace PUBG
 {
 	Overlay * Overlay::self = Overlay::instance();
-
 	Overlay::Overlay() :_hWnd(NULL),
 		twnd(NULL),
 		s_width(0),
@@ -23,14 +22,9 @@ namespace PUBG
 		d3ddev(NULL),
 		pFont(NULL),
 		margin({ 0,0,s_width,s_height }),
-		hThd(NULL),
-		SynSkeletonsSize(0)
+		hThd(NULL)
 	{
-		SynSkeletons.resize(SKELETON_MAX);
 
-		SynItems.resize(SYN_ITEM_MAX);
-		for (int i = 0; i < SYN_ITEM_MAX - 1; ++i)
-			SynItems[i];
 
 	}
 
@@ -192,21 +186,18 @@ namespace PUBG
 	}
 
 	void Overlay::RenderPlayersSkeleton() {
-		CopySkeletons();
-		for (int i = 0; i < SkeletonsRenderSize;++i) {
-			DrawLine(SkeletonsRender[i].t1.x, SkeletonsRender[i].t1.y, SkeletonsRender[i].t2.x, SkeletonsRender[i].t2.y, D3DCOLOR_ARGB(255, 153, 249, 9));
+		for (int i = 0; i < SKELETON_MAX;++i) {
+			if (skeletons.get(i).alive)
+			DrawLine(skeletons.get(i).t1.x, skeletons.get(i).t1.y, skeletons.get(i).t2.x, skeletons.get(i).t2.y, D3DCOLOR_ARGB(255, 153, 249, 9));
 		}
 	}
 
 	///画物品
 	void Overlay::RenderDrawItem()
 	{
-		/*CopyItems();*/
-		for (int i = 0; i < ITEM_MAX; ++i) {
-			if(SynItems[i].alive)
-				DrawString(SynItems[i].vec.x, SynItems[i].vec.y, D3DCOLOR_ARGB(255, 255, 144, 0), pFont, "ItemId = %d", SynItems[i].index);
-		}
-
+		for (int i = 0; i < ITEM_MAX; ++i) 
+			if(items.get(i).alive)
+				DrawString(items.get(i).vec.x, items.get(i).vec.y, D3DCOLOR_ARGB(255, 255, 144, 0), pFont, "ItemId = %d", items.get(i).index);
 	}
 
 	void Overlay::Render()
@@ -218,102 +209,13 @@ namespace PUBG
 
 								 //calculate and and draw esp stuff
 		//ESP
-		//RenderPlayersSkeleton();	//画骨骼
+		RenderPlayersSkeleton();	//画骨骼
 
 		RenderDrawItem(); ///画物品
 
 		d3ddev->EndScene();    // ends the 3D scene
 
 		d3ddev->Present(NULL, NULL, NULL, NULL);   // displays the created frame on the screen
-	}
-
-	void Overlay::updateSkeletons(std::vector<D3DXLine>& skeletons, size_t size)
-	{
-		/*std::lock_guard<std::mutex> l(SkeletonsLock);
-		for (int i = 0; i < size; ++i) 
-			SynSkeletons[i] = skeletons[i];
-		SynSkeletonsSize = size;*/
-	}
-
-	void Overlay::CopySkeletons()
-	{
-		/*std::lock_guard<std::mutex> l(SkeletonsLock);
-		for (int i = 0; i < SynSkeletonsSize; ++i) 
-			SkeletonsRender[i] = SynSkeletons[i];
-		SkeletonsRenderSize = SynSkeletonsSize;*/
-	}
-
-	void Overlay::updateItems(VITEM & items, int size)
-	{
-		int index;
-		REFTAB_ITEM rti;
-
-		//清理
-		for (int i = 0; i < size - 1; ++i) {
-			items[i].alive = true;
-			int index;
-			int id = items[i].id;
-			if ((index = FindItemIndexTable(id)) != -1) {
-				ItemIndexTable[index].update = true;
-			}
-		}
-
-		for (REFTAB::iterator iter = ItemIndexTable.begin();
-			iter != ItemIndexTable.end(); ++iter) {
-			if (false == iter->second.update){
-				SynItems[iter->second.data].alive = false;
-				iter = ItemIndexTable.erase(iter);
-			}
-		}
-	
-
-		//更新
-		for (int i = 0; i < size - 1; ++i) {
-			items[i].alive = true;
-			int index;
-			int id = items[i].id;
-			if ((index = FindItemIndexTable(id)) == -1) {
-				for (int i = 0; ; ++i) {
-					if (!SynItems[i].alive) {
-						index = i;
-						break;
-					}
-				}
-			}
-
-			SynItems[index] = items[i];
-			rti.data = index;
-			rti.update = true;
-			ItemIndexTableAdd(id, rti);
-		}
-
-
-	}
-
-	int Overlay::FindItemIndexTable(DWORD_PTR id)
-	{
-		auto it = ItemIndexTable.find(id);
-		if (ItemIndexTable.end() != it)
-			return it->second.data;
-		return -1;
-	}
-
-	void Overlay::ItemIndexTableDel(DWORD_PTR id)
-	{
-		auto it = ItemIndexTable.find(id);
-		if (ItemIndexTable.end() != it)
-			ItemIndexTable.erase(it);
-	}
-
-	void Overlay::ItemIndexTableAdd(DWORD_PTR id, REFTAB_ITEM &item)
-	{
-		ItemIndexTable[id] = item;
-	}
-
-	void Overlay::ItemIndexTableReset()
-	{
-		for (auto it : ItemIndexTable)
-			it.second.update = false;
 	}
 
 	DWORD Overlay::ThreadProc(LPVOID lpThreadParameter)

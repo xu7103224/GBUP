@@ -19,8 +19,6 @@
 #define GAMEWINDOW "UnrealWindow"
 //#endif // _DEBUG
 
-#define SKELETON_MAX (100*30)
-#define SYN_ITEM_MAX (10000)
 typedef BOOL ( __stdcall *_EnumActorCallback)(AActor &actor, DWORD_PTR actoraddr, void *parameter);
 
 namespace PUBG
@@ -73,7 +71,7 @@ namespace PUBG
 		FCameraCacheEntry	&GetCameraCache(FCameraCacheEntry &);	//获取摄像头
 		Vector3D			WorldToScreen(Vector3D & WorldLocation, FCameraCacheEntry & CameraCacheL);
 		//void				UpdatePlayersSkeleton();										    //更新所有玩家的骨骼
-		std::vector<D3DXLine> &GetSkeletons(DWORD_PTR mesh, std::vector<D3DXLine>& vl);			//获取一组骨架线
+		void				GetSkeletons(DWORD_PTR mesh);			//获取一组骨架线
 
 		void				OnPlayer(ACharacter &player);                      //所有关于玩家的操作在这里
 		void				OnVehicle(DWORD_PTR vehicleaddr, VehicleType type);//所有关于载具的操作在这里
@@ -115,13 +113,7 @@ namespace PUBG
 
 		std::unordered_set<AActor*> GetPlayerList();
 
-		//所有玩家骨骼线
-		std::vector<D3DXLine>		PlayersSkeleton;
-		size_t						PlayersSkeletonSize;
 		
-		//所有item
-		VITEM						Items;
-		size_t						ItemsSize;
 
 		//可探测玩家数量
 		int PlayerCounts;

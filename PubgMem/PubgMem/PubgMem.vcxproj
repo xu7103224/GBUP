@@ -25,6 +25,7 @@
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="DynImport.h" />
     <ClInclude Include="FunctionTypes.h" />
+    <ClInclude Include="GlobalArray.h" />
     <ClInclude Include="ItemNameDetials.h" />
     <ClInclude Include="kfifo.h" />
     <ClInclude Include="Macro.h" />
@@ -41,6 +42,7 @@
     <ClInclude Include="PUBG_Engine_classes.h" />
     <ClInclude Include="PUBG_Engine_structs.h" />
     <ClInclude Include="Rotator.h" />
+    <ClInclude Include="Singleton.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Types.h" />
@@ -57,6 +59,7 @@
   <ItemGroup>
     <ClCompile Include="FMath.cpp" />
     <ClCompile Include="GameManager.cpp" />
+    <ClCompile Include="GlobalArray.cpp" />
     <ClCompile Include="kfifo.cpp" />
     <ClCompile Include="NativeSubsystem.cpp" />
     <ClCompile Include="Offsets.cpp" />
@@ -67,6 +70,7 @@
     <ClCompile Include="ProcessModules.cpp" />
     <ClCompile Include="PubgMem.cpp" />
     <ClCompile Include="Rotator.cpp" />
+    <ClCompile Include="Singleton.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="vector2D.cpp" />
     <ClCompile Include="vector3D.cpp" />

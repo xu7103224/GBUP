@@ -16,8 +16,6 @@ namespace PUBG
 		: status(STATUS_SUCCESS)
 		, BaseAddress(0),
 		PlayerCounts(0),
-		PlayersSkeletonSize(0),
-		ItemsSize(0),
 		bGameInit(false)
 	{
 		my_atomic.store(FALSE);
@@ -34,8 +32,6 @@ namespace PUBG
 			AllActors.Vehicles.push_back(std::vector<DWORD_PTR>()); // BUGGY
 			AllActors.Vehicles.push_back(std::vector<DWORD_PTR>()); // BOAT
 		}
-		PlayersSkeleton.resize(SKELETON_MAX);
-		Items.resize(ITEM_MAX);
 	}
 
 	pubgCon::~pubgCon()
@@ -412,37 +408,10 @@ namespace PUBG
 		temp.vec.x = w3d.x;
 		temp.vec.y = w3d.y;
 		temp.id = pUItem;
+		temp.alive = true;
 		return temp;
 
 	}
-
-
-	//DroppedItemInfo pubgCon::GetDroppedItemInfomation(DWORD_PTR Ptr, AActor &actor, DWORD_PTR pactor, DWORD i)
-	//{
-	//	DroppedItemInfo temp(NULL);
-	//	wchar_t entityname[64] = { NULL };
-	//	Vector3D worldvec;
-	//	DWORD_PTR pADroppedItemGroup(0);
-	//	DWORD_PTR pUItem(0);
-	//	DWORD_PTR pUItemFString(0);
-	//	DWORD_PTR pItemName(0);
-
-	//	proc.memory().Read<DWORD_PTR>(Ptr + i * 0x10, pADroppedItemGroup);
-	//	proc.memory().Read<Vector3D>(pADroppedItemGroup + 0x1E0, worldvec);
-
-	//	proc.memory().Read<DWORD_PTR>(pADroppedItemGroup + 0x448, pUItem);//UDroppedItemInteractionComponent.UItem
-	//	proc.memory().Read<DWORD_PTR>(pUItem + 0x40, pUItemFString);
-	//	proc.memory().Read<DWORD_PTR>(pUItemFString + 0x28, pItemName);
-
-
-	//	proc.memory().Read<uint8_t>(pUItem + 0x170, temp.Category);
-	//	proc.memory().Read<DWORD>(pUItem + 0x18, temp.index);
-	//	Vector3D w3d = WorldToScreen(GetActorPos(actor) + worldvec, *g_global.cameracache);
-	//	temp.vec.x = w3d.x;
-	//	temp.vec.y = w3d.y;
-	//	return temp;
-
-	//}
 
 	std::unordered_set<AActor*> pubgCon::GetPlayerList()
 	{
@@ -544,13 +513,14 @@ namespace PUBG
 		return Screenlocation;
 	}
 
-	std::vector<D3DXLine> &pubgCon::GetSkeletons(DWORD_PTR mesh, std::vector<D3DXLine>& vl)
+	void pubgCon::GetSkeletons(DWORD_PTR mesh)
 	{
 		Vector3D neckpos = GetBoneWithRotation(mesh, Bones::neck_01);
 		Vector3D pelvispos = GetBoneWithRotation(mesh, Bones::pelvis);
 		Vector3D previous(0, 0, 0);
 		Vector3D current, p1, c1;
-		
+
+		Overlay *wnd = Overlay::instance();
 		for (auto a : skeleton)
 		{
 			previous = Vector3D(0, 0, 0);
@@ -565,23 +535,23 @@ namespace PUBG
 				}
 				p1 = WorldToScreen(previous, *g_global.cameracache);
 				c1 = WorldToScreen(current, *g_global.cameracache);
-				D3DXLine dLine;
+				SkeletonInfo dLine;
 				dLine.t1.x = p1.x;
 				dLine.t1.y = p1.y;
 				dLine.t2.x = c1.x;
 				dLine.t2.y = c1.y;
-				vl[PlayersSkeletonSize] = dLine;
-				++PlayersSkeletonSize;
+				dLine.alive = true;
+				wnd->getSkeletons().set(dLine);
 				previous = current;
 			}
 		}
-		return vl;
+		return ;
 	}
 
 	void pubgCon::OnPlayer(ACharacter & player)
 	{
 		//获取骨架
-		//GetSkeletons(reinterpret_cast<DWORD_PTR>(player.Mesh), PlayersSkeleton);
+		GetSkeletons(reinterpret_cast<DWORD_PTR>(player.Mesh));
 
 		//玩家计数
 		++PlayerCounts;
@@ -595,11 +565,11 @@ namespace PUBG
 		proc.memory().Read<DWORD_PTR>(actorPtr + 0x2D8, DroppedItemGroupArray);//UnknownData14
 		proc.memory().Read<int>(actorPtr + 0x2E0, count);
 		DroppedItemInfo dii;
+		Overlay *wnd = Overlay::instance();
 		for (int i(0); i < count; i++) {
 			DroppedItemInfo dii = GetDroppedItemInfomation(DroppedItemGroupArray, actor, actorPtr, i);
 			if (dii.index != 0) {
-				Items[ItemsSize] = dii;
-				++ItemsSize;
+				wnd->getItems().set(dii);
 			}
 		}
 	}
@@ -650,10 +620,8 @@ namespace PUBG
 			//update window data
 			//
 			Overlay *wnd = Overlay::instance();
-			wnd->updateSkeletons(PlayersSkeleton, PlayersSkeletonSize);
-			wnd->updateItems(Items, ItemsSize);
-			//wnd->updateItems(Items, ItemsSize);
-			//zf_ItemQueue.push(spInfo);
+			wnd->getSkeletons().end();
+			wnd->getItems().end();
 #ifdef _DEBUG
 			static int loopcount = 0;
 			++loopcount;
@@ -669,7 +637,6 @@ namespace PUBG
 			if (GameIn()) {
 				if (!GameInit()) {
 					g_global.update();
-					//RefreshOffsets();
 					GameInit(TRUE);
 				}
 			}
@@ -680,10 +647,9 @@ namespace PUBG
 			//
 			//clear
 			//
-			wnd->ItemIndexTableReset();//清空更新hash表
 			PlayerCounts = 0;
-			PlayersSkeletonSize = 0;//骨骼线清零
-			ItemsSize = 0;			//item清零
+			wnd->getItems().reset();
+			wnd->getSkeletons().reset();
 			Sleep(0);
 			++loopcount;
 		} while (true);

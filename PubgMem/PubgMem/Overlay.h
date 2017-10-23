@@ -8,7 +8,9 @@
 #include <unordered_map>
 
 
-#define ITEM_MAX			200	//只迭代前200个
+#define SYN_ITEM_MAX (10000)
+#define ITEM_MAX			(200)	//只迭代前200个
+#define SKELETON_MAX		(2000)	//只迭代前2000个
 namespace PUBG
 {
 	struct D3DXLine {
@@ -16,22 +18,43 @@ namespace PUBG
 		D3DXVECTOR2 t2;
 	};
 
-	template<typename T>
-	struct UPDATE_ITEM {
-		T data;
-		BOOL update;
+
+	template <typename T, size_t SIZE>
+	struct SynArray {
+		SynArray() :_size(0), _array(std::vector<T>(SIZE)) {
+			for (int i = 0; i < SIZE - 1; ++i)
+				_array[i].alive = false;
+		}
+
+		inline void set(T &item) {
+			_array[_size] = item;
+			_size += 1;
+		};
+		inline void end() { _array[_size].alive = false; };
+		inline void reset() { _size = 0; };
+		T& get(size_t index) { return _array[index]; }
+		std::vector<T>	_array;
+		size_t			_size;
 	};
 
-	struct DroppedItemInfo
+	struct SynData {
+		SynData() { alive = false; };
+		SynData(bool alive) :alive(alive) {};
+		SynData(SynData &_Rt) {
+			alive = _Rt.alive;
+		}
+		bool		alive;
+	};
+
+	struct DroppedItemInfo : public SynData
 	{
 		DWORD_PTR	id;
 		DWORD       index;
 		uint8_t     Category;
 		D3DXVECTOR2 vec;
-		BOOL		alive;
 
-		DroppedItemInfo(int i = NULL):index(0),
-			Category(0), vec(0.0, 0.0), alive(false)
+		DroppedItemInfo(int i = NULL):SynData(false),index(0),
+			Category(0), vec(0.0, 0.0)
 		{
 		}
 		DroppedItemInfo(DroppedItemInfo& cop) {
@@ -41,12 +64,21 @@ namespace PUBG
 			vec = cop.vec;
 			alive = cop.alive;
 		}
-
 	};
 
-typedef std::vector<DroppedItemInfo>					VITEM;
-typedef UPDATE_ITEM<int>								REFTAB_ITEM;
-typedef std::unordered_map<DWORD_PTR, REFTAB_ITEM>		REFTAB;
+	struct SkeletonInfo : public SynData 
+	{
+		SkeletonInfo() :SynData(false), t1(0.0, 0.0), t2(0.0, 0.0) {}
+		SkeletonInfo(SkeletonInfo & _Rt) {
+			memcpy(this, &_Rt, sizeof(SkeletonInfo));
+		}
+
+		D3DXVECTOR2 t1;
+		D3DXVECTOR2 t2;
+	};
+
+typedef SynArray<DroppedItemInfo, SYN_ITEM_MAX>					ITEMBUFFER;
+typedef SynArray<SkeletonInfo,	SYN_ITEM_MAX>					SKELETONBUFFER;
 	class Overlay
 	{
 	public:
@@ -67,14 +99,11 @@ typedef std::unordered_map<DWORD_PTR, REFTAB_ITEM>		REFTAB;
 		
 
 		//骨骼
-		void updateSkeletons(std::vector<D3DXLine> &skeletons, size_t size);
-		void CopySkeletons();
+		inline SKELETONBUFFER &getSkeletons() { return skeletons; };
+
 		//掉落
-		void updateItems(VITEM &items, int size);
-		int FindItemIndexTable(DWORD_PTR id);
-		void ItemIndexTableDel(DWORD_PTR id);
-		void ItemIndexTableAdd(DWORD_PTR id, REFTAB_ITEM &item);
-		void ItemIndexTableReset();
+		inline ITEMBUFFER &getItems() { return items; };
+
 	private:
 		Overlay();
 		static DWORD WINAPI ThreadProc(LPVOID lpThreadParameter);
@@ -92,16 +121,13 @@ typedef std::unordered_map<DWORD_PTR, REFTAB_ITEM>		REFTAB;
 		LPDIRECT3DDEVICE9 d3ddev;
 		LPD3DXFONT pFont;
 		MARGINS  margin;
+
 		//所有玩家骨骼线
-		std::vector<D3DXLine>		SynSkeletons;		//要同步的
-		size_t						SynSkeletonsSize;	//
-		std::vector<D3DXLine>		SkeletonsRender;
-		size_t						SkeletonsRenderSize;	//
-		std::mutex					SkeletonsLock;
+		SKELETONBUFFER skeletons;
 
 		//所有item
-		VITEM						SynItems;
-		REFTAB						ItemIndexTable;
+		ITEMBUFFER items;
+
 
 
 
