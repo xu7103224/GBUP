@@ -25,7 +25,6 @@
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="DynImport.h" />
     <ClInclude Include="FunctionTypes.h" />
-    <ClInclude Include="GlobalArray.h" />
     <ClInclude Include="ItemNameDetials.h" />
     <ClInclude Include="kfifo.h" />
     <ClInclude Include="Macro.h" />
@@ -59,7 +58,6 @@
   <ItemGroup>
     <ClCompile Include="FMath.cpp" />
     <ClCompile Include="GameManager.cpp" />
-    <ClCompile Include="GlobalArray.cpp" />
     <ClCompile Include="kfifo.cpp" />
     <ClCompile Include="NativeSubsystem.cpp" />
     <ClCompile Include="Offsets.cpp" />

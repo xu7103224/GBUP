@@ -408,7 +408,6 @@ namespace PUBG
 		temp.vec.x = w3d.x;
 		temp.vec.y = w3d.y;
 		temp.id = pUItem;
-		temp.alive = true;
 		return temp;
 
 	}
@@ -540,7 +539,6 @@ namespace PUBG
 				dLine.t1.y = p1.y;
 				dLine.t2.x = c1.x;
 				dLine.t2.y = c1.y;
-				dLine.alive = true;
 				wnd->getSkeletons().set(dLine);
 				previous = current;
 			}
@@ -620,8 +618,8 @@ namespace PUBG
 			//update window data
 			//
 			Overlay *wnd = Overlay::instance();
-			wnd->getSkeletons().end();
-			wnd->getItems().end();
+			wnd->getSkeletons().end(wnd->getSkeletons().size());
+			wnd->getItems().end(wnd->getSkeletons().size());
 #ifdef _DEBUG
 			static int loopcount = 0;
 			++loopcount;
@@ -648,8 +646,8 @@ namespace PUBG
 			//clear
 			//
 			PlayerCounts = 0;
-			wnd->getItems().reset();
-			wnd->getSkeletons().reset();
+			wnd->getItems().size(0);
+			wnd->getSkeletons().size(0);
 			Sleep(0);
 			++loopcount;
 		} while (true);

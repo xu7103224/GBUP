@@ -136,7 +136,6 @@
     <ClInclude Include="kfifo.h">
       <Filter>Misc\FIFO</Filter>
     </ClInclude>
-    <ClInclude Include="GlobalArray.h" />
     <ClInclude Include="Singleton.h">
       <Filter>Misc</Filter>
     </ClInclude>
@@ -191,7 +190,6 @@
     <ClCompile Include="kfifo.cpp">
       <Filter>Misc\FIFO</Filter>
     </ClCompile>
-    <ClCompile Include="GlobalArray.cpp" />
     <ClCompile Include="Singleton.cpp">
       <Filter>Misc</Filter>
     </ClCompile>

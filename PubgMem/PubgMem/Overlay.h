@@ -21,39 +21,40 @@ namespace PUBG
 
 	template <typename T, size_t SIZE>
 	struct SynArray {
-		SynArray() :_size(0), _array(std::vector<T>(SIZE)) {
-			for (int i = 0; i < SIZE - 1; ++i)
-				_array[i].alive = false;
+		SynArray() :_size(0), _end(0), _array(std::vector<T>(SIZE)) {
 		}
 
 		inline void set(T &item) {
 			_array[_size] = item;
 			_size += 1;
 		};
-		inline void end() { _array[_size].alive = false; };
-		inline void reset() { _size = 0; };
-		T& get(size_t index) { return _array[index]; }
+		inline void end(size_t size) { _end = size; };
+		inline size_t end() { return _end; }
+		inline void size(size_t size) { _size = size; };
+		inline size_t size() { return _size; };
+		inline T& get(size_t index) { return _array[index]; }
 		std::vector<T>	_array;
 		size_t			_size;
+		size_t			_end;
 	};
 
-	struct SynData {
-		SynData() { alive = false; };
-		SynData(bool alive) :alive(alive) {};
-		SynData(SynData &_Rt) {
-			alive = _Rt.alive;
-		}
-		bool		alive;
-	};
+	//struct SynData {
+	//	SynData() { alive = false; };
+	//	SynData(bool alive) :alive(alive) {};
+	//	SynData(SynData &_Rt) {
+	//		alive = _Rt.alive;
+	//	}
+	//	bool		alive;
+	//};
 
-	struct DroppedItemInfo : public SynData
+	struct DroppedItemInfo
 	{
 		DWORD_PTR	id;
 		DWORD       index;
 		uint8_t     Category;
 		D3DXVECTOR2 vec;
 
-		DroppedItemInfo(int i = NULL):SynData(false),index(0),
+		DroppedItemInfo(int i = NULL):index(0),
 			Category(0), vec(0.0, 0.0)
 		{
 		}
@@ -62,13 +63,12 @@ namespace PUBG
 			index = cop.index;
 			Category = cop.Category;
 			vec = cop.vec;
-			alive = cop.alive;
 		}
 	};
 
-	struct SkeletonInfo : public SynData 
+	struct SkeletonInfo
 	{
-		SkeletonInfo() :SynData(false), t1(0.0, 0.0), t2(0.0, 0.0) {}
+		SkeletonInfo() :t1(0.0, 0.0), t2(0.0, 0.0) {}
 		SkeletonInfo(SkeletonInfo & _Rt) {
 			memcpy(this, &_Rt, sizeof(SkeletonInfo));
 		}

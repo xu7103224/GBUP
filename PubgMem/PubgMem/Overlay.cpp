@@ -186,8 +186,7 @@ namespace PUBG
 	}
 
 	void Overlay::RenderPlayersSkeleton() {
-		for (int i = 0; i < SKELETON_MAX;++i) {
-			if (skeletons.get(i).alive)
+		for (int i = 0; i < items.end();++i) {
 			DrawLine(skeletons.get(i).t1.x, skeletons.get(i).t1.y, skeletons.get(i).t2.x, skeletons.get(i).t2.y, D3DCOLOR_ARGB(255, 153, 249, 9));
 		}
 	}
@@ -195,8 +194,7 @@ namespace PUBG
 	///画物品
 	void Overlay::RenderDrawItem()
 	{
-		for (int i = 0; i < ITEM_MAX; ++i) 
-			if(items.get(i).alive)
+		for (int i = 0; i < items.end(); ++i)
 				DrawString(items.get(i).vec.x, items.get(i).vec.y, D3DCOLOR_ARGB(255, 255, 144, 0), pFont, "ItemId = %d", items.get(i).index);
 	}
 
@@ -211,7 +209,7 @@ namespace PUBG
 		//ESP
 		RenderPlayersSkeleton();	//画骨骼
 
-		RenderDrawItem(); ///画物品
+		//RenderDrawItem(); ///画物品
 
 		d3ddev->EndScene();    // ends the 3D scene
 
